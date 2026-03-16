@@ -5,10 +5,15 @@ import { getActiveCourseId } from "@/lib/content/parser";
 
 export async function GET(req: NextRequest) {
   const chapterId = req.nextUrl.searchParams.get("chapterId");
+  const scope = req.nextUrl.searchParams.get("scope");
   const courseId = await getActiveCourseId();
   try {
     const notes = await db.note.findMany({
-      where: { courseId, ...(chapterId ? { chapterId } : {}) },
+      where: {
+        courseId,
+        ...(chapterId ? { chapterId } : {}),
+        ...(scope ? { scope } : {}),
+      },
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json(notes);

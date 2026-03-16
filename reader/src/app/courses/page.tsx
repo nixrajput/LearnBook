@@ -1,21 +1,42 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookOpen, CheckCircle2, StickyNote, Bookmark } from "lucide-react";
+import {
+  BookOpen,
+  CheckCircle2,
+  StickyNote,
+  Bookmark,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { db } from "@/lib/db";
 import { getActiveCourseId } from "@/lib/content/parser";
-import { SetActiveCourseButton } from "@/components/course/set-active-course-button";
-import { StopPropagation } from "@/components/course/stop-propagation";
+import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = { title: "Courses" };
 
-export default async function CoursesPage() {
-  const [courses, activeCourseId] = await Promise.all([
+const PAGE_SIZE = 10;
+
+interface PageProps {
+  searchParams: Promise<{ page?: string }>;
+}
+
+export default async function CoursesPage({ searchParams }: PageProps) {
+  const { page: pageParam } = await searchParams;
+  const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
+  const skip = (page - 1) * PAGE_SIZE;
+
+  const [totalCount, courses, activeCourseId] = await Promise.all([
+    db.course.count(),
     db.course.findMany({
       orderBy: { createdAt: "asc" },
+      skip,
+      take: PAGE_SIZE,
       include: { _count: { select: { notes: true, bookmarks: true } } },
     }),
     getActiveCourseId(),
   ]);
+
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   const summaries = await Promise.all(
     courses.map(async (course) => {
@@ -45,7 +66,7 @@ export default async function CoursesPage() {
       <div className="mb-8 animate-slide-down">
         <h1 className="text-3xl font-bold tracking-tight">Courses</h1>
         <p className="mt-1 text-muted-foreground">
-          {courses.length} course{courses.length !== 1 ? "s" : ""} in your library
+          {totalCount} course{totalCount !== 1 ? "s" : ""} in your library
         </p>
       </div>
 
@@ -64,11 +85,6 @@ export default async function CoursesPage() {
                   <h2 className="text-lg font-semibold transition-colors group-hover:text-primary">
                     {course.title}
                   </h2>
-                  {course.isActive && (
-                    <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
-                      active
-                    </span>
-                  )}
                 </div>
                 {course.description && (
                   <p className="mb-3 text-sm text-muted-foreground">{course.description}</p>
@@ -113,16 +129,17 @@ export default async function CoursesPage() {
                 )}
               </div>
 
-              {/* Set active button — stop propagation so clicking it doesn't navigate */}
-              <StopPropagation>
-                <SetActiveCourseButton courseId={course.id} isActive={course.isActive} />
-              </StopPropagation>
+              {course.isActive && (
+                <Badge variant="success" className="shrink-0">
+                  Active
+                </Badge>
+              )}
             </div>
           </Link>
         ))}
       </div>
 
-      {courses.length === 0 && (
+      {totalCount === 0 && (
         <div className="py-20 text-center">
           <BookOpen className="mx-auto mb-4 h-12 w-12 text-muted-foreground/30" />
           <h2 className="mb-2 text-lg font-medium">No courses yet</h2>
@@ -130,6 +147,75 @@ export default async function CoursesPage() {
             Add a course collection to <code className="font-mono">courses/</code> and run{" "}
             <code className="font-mono">npm run db:seed</code>.
           </p>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-8 flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Page {page} of {totalPages}
+          </p>
+          <div className="flex items-center gap-2">
+            {page > 1 ? (
+              <Link
+                href={`/courses?page=${page - 1}`}
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg border bg-card px-3 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </Link>
+            ) : (
+              <span className="inline-flex h-9 cursor-not-allowed items-center gap-1.5 rounded-lg border bg-card px-3 text-sm text-muted-foreground opacity-50">
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </span>
+            )}
+
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                .reduce<(number | "…")[]>((acc, p, idx, arr) => {
+                  if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push("…");
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((p, idx) =>
+                  p === "…" ? (
+                    <span key={`ellipsis-${idx}`} className="px-1 text-sm text-muted-foreground">
+                      …
+                    </span>
+                  ) : (
+                    <Link
+                      key={p}
+                      href={`/courses?page=${p}`}
+                      className={`inline-flex h-9 w-9 items-center justify-center rounded-lg border text-sm transition-colors ${
+                        p === page
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "bg-card hover:bg-accent hover:text-accent-foreground"
+                      }`}
+                    >
+                      {p}
+                    </Link>
+                  ),
+                )}
+            </div>
+
+            {page < totalPages ? (
+              <Link
+                href={`/courses?page=${page + 1}`}
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg border bg-card px-3 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            ) : (
+              <span className="inline-flex h-9 cursor-not-allowed items-center gap-1.5 rounded-lg border bg-card px-3 text-sm text-muted-foreground opacity-50">
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </span>
+            )}
+          </div>
         </div>
       )}
     </div>

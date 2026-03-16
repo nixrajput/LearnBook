@@ -18,24 +18,26 @@ export function ReaderLayout({ courseId, parts, chapter, children }: ReaderLayou
   const { sidebarOpen, tocOpen, notesPanelOpen } = useReaderStore();
 
   return (
-    <div className="flex min-h-screen overflow-x-hidden">
-      {/* Left sidebar */}
+    <div className="flex flex-1 overflow-hidden">
+      {/* Left sidebar — fixed height, independently scrollable */}
       <ChapterSidebar parts={parts} open={sidebarOpen} />
 
       {/* Main content area */}
-      <div className={cn("flex min-w-0 flex-1 overflow-x-hidden", notesPanelOpen ? "xl:pr-0" : "")}>
-        {/* Reader */}
-        <div className="flex min-w-0 flex-1 flex-col">{children}</div>
+      <div className={cn("flex min-w-0 flex-1 overflow-hidden")}>
+        {/* Reader — only this area scrolls */}
+        <div id="reader-scroll-area" className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
+          {children}
+        </div>
 
-        {/* Right TOC */}
+        {/* Right TOC — fixed height, independently scrollable */}
         {tocOpen && (
-          <div className="hidden w-56 shrink-0 animate-slide-in-right px-6 py-6 xl:block">
+          <div className="hidden w-56 shrink-0 animate-slide-in-right overflow-y-auto border-l px-5 py-6 xl:block">
             <TableOfContents sections={chapter.sections as SectionSummary[]} open={tocOpen} />
           </div>
         )}
       </div>
 
-      {/* Notes panel (split view on large screens) */}
+      {/* Notes panel (split view on large screens) — fixed height, independently scrollable */}
       {notesPanelOpen && (
         <NotesPanel courseId={courseId} chapterId={chapter.id} chapterTitle={chapter.title} />
       )}

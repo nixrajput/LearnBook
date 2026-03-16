@@ -9,6 +9,8 @@ export function useActiveHeading(sectionSlugs: string[]) {
   useEffect(() => {
     if (sectionSlugs.length === 0) return;
 
+    const root = document.getElementById("reader-scroll-area") ?? null;
+
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -18,7 +20,7 @@ export function useActiveHeading(sectionSlugs: string[]) {
           }
         }
       },
-      { rootMargin: "0px 0px -70% 0px", threshold: 0 },
+      { root, rootMargin: "0px 0px -70% 0px", threshold: 0 },
     );
 
     const elements: Element[] = [];

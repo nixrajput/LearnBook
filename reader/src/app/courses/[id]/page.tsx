@@ -3,9 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Clock, CheckCircle2, BookOpen, ArrowLeft, StickyNote, Bookmark } from "lucide-react";
 import { db } from "@/lib/db";
-import { getActiveCourseId } from "@/lib/content/parser";
 import { Progress } from "@/components/ui/progress";
-import { SetActiveCourseButton } from "@/components/course/set-active-course-button";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -20,7 +18,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function CourseDetailPage({ params }: PageProps) {
   const { id } = await params;
 
-  const [course, parts, activeCourseId] = await Promise.all([
+  const [course, parts] = await Promise.all([
     db.course.findUnique({ where: { id }, select: { title: true, description: true } }),
     db.part.findMany({
       where: { courseId: id },
@@ -36,12 +34,18 @@ export default async function CourseDetailPage({ params }: PageProps) {
         },
       },
     }),
-    getActiveCourseId(),
   ]);
 
   if (!course) notFound();
 
-  const isActive = id === activeCourseId;
+  // Auto-activate this course when viewing its detail page
+  await db.userPreference.upsert({
+    where: { id: "default" },
+    update: { activeCourseId: id },
+    create: { id: "default", activeCourseId: id },
+  });
+
+  const isActive = true;
   const totalChapters = parts.reduce((s, p) => s + p.chapters.length, 0);
   const completedChapters = parts.reduce(
     (s, p) => s + p.chapters.filter((c) => c.progress?.completed).length,
@@ -63,12 +67,9 @@ export default async function CourseDetailPage({ params }: PageProps) {
 
       {/* ── Course header ──────────────────────────────────────────────────────── */}
       <div className="mb-8 animate-slide-down">
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <h1 className="mb-2 text-3xl font-bold tracking-tight">{course.title}</h1>
-            {course.description && <p className="text-muted-foreground">{course.description}</p>}
-          </div>
-          <SetActiveCourseButton courseId={id} isActive={isActive} />
+        <div className="mb-4">
+          <h1 className="mb-2 text-3xl font-bold tracking-tight">{course.title}</h1>
+          {course.description && <p className="text-muted-foreground">{course.description}</p>}
         </div>
 
         {/* Stats row */}
@@ -94,11 +95,6 @@ export default async function CourseDetailPage({ params }: PageProps) {
             <span className="text-lg font-bold tabular-nums text-primary">{completionPct}%</span>
           </div>
           <Progress value={completionPct} className="h-2" />
-          {!isActive && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              Set as active course to read chapters.
-            </p>
-          )}
         </div>
       </div>
 
@@ -119,8 +115,8 @@ export default async function CourseDetailPage({ params }: PageProps) {
               <div className="mb-4">
                 <div className="mb-2 flex items-center justify-between gap-4">
                   <div className="flex items-baseline gap-2">
-                    <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
-                      Part {part.romanNumeral}
+                    <span className="shrink-0 text-xs font-semibold text-muted-foreground">
+                      Part {part.number}
                     </span>
                     <h2 className="text-base font-semibold leading-snug">{part.title}</h2>
                   </div>
@@ -141,12 +137,8 @@ export default async function CourseDetailPage({ params }: PageProps) {
                   return (
                     <Link
                       key={chapter.id}
-                      href={isActive ? `/course/${chapter.slug}` : "#"}
-                      className={`group flex items-center gap-4 rounded-lg border bg-card px-4 py-3.5 transition-all duration-150 ${
-                        isActive
-                          ? "hover:border-primary/30 hover:bg-accent/40"
-                          : "cursor-not-allowed opacity-60"
-                      }`}
+                      href={`/course/${chapter.slug}`}
+                      className="group flex items-center gap-4 rounded-lg border bg-card px-4 py-3.5 transition-all duration-150 hover:border-primary/30 hover:bg-accent/40"
                     >
                       {/* Status icon */}
                       <div className="shrink-0">

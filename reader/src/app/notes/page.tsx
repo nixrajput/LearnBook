@@ -3,8 +3,16 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { formatDate } from "@/lib/utils/date";
 import { StickyNote, ArrowRight } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
 
 export const metadata: Metadata = { title: "My Notes" };
+
+const SCOPE_COLORS: Record<string, string> = {
+  course: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
+  section: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
+  selection: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
+  chapter: "bg-muted text-muted-foreground",
+};
 
 export default async function NotesPage() {
   const notes = await db.note.findMany({
@@ -82,7 +90,7 @@ export default async function NotesPage() {
               </div>
               <div className="space-y-8">
                 {chapterGroups.map(({ chapter, notes: chapterNotes }) => (
-                  <div key={chapter.slug}>
+                  <div key={chapter?.slug ?? "__course__"}>
                     <div className="mb-3 flex items-center justify-between">
                       <Link
                         href={`/course/${chapter.slug}`}
@@ -95,19 +103,42 @@ export default async function NotesPage() {
                       </span>
                     </div>
                     <div className="space-y-3">
-                      {chapterNotes.map((note) => (
-                        <div key={note.id} className="rounded-lg border bg-card p-4">
-                          {note.sectionSlug && (
-                            <p className="mb-1 text-xs text-muted-foreground">{note.sectionSlug}</p>
-                          )}
-                          <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                            {note.content}
-                          </p>
-                          <p className="mt-2 text-xs text-muted-foreground">
-                            {formatDate(note.updatedAt)}
-                          </p>
-                        </div>
-                      ))}
+                      {chapterNotes.map((note) => {
+                        const scope = (note as typeof note & { scope?: string }).scope ?? "chapter";
+                        const selectedText = (
+                          note as typeof note & { selectedText?: string | null }
+                        ).selectedText;
+                        return (
+                          <div key={note.id} className="rounded-lg border bg-card p-4">
+                            <div className="mb-2 flex items-center gap-2">
+                              <span
+                                className={cn(
+                                  "rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide",
+                                  SCOPE_COLORS[scope] ?? SCOPE_COLORS.chapter,
+                                )}
+                              >
+                                {scope}
+                              </span>
+                              {note.sectionSlug && scope === "section" && (
+                                <span className="text-[10px] text-muted-foreground">
+                                  #{note.sectionSlug}
+                                </span>
+                              )}
+                            </div>
+                            {selectedText && (
+                              <blockquote className="mb-2 border-l-2 border-muted-foreground/30 pl-2 text-xs italic text-muted-foreground">
+                                {selectedText}
+                              </blockquote>
+                            )}
+                            <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                              {note.content}
+                            </p>
+                            <p className="mt-2 text-xs text-muted-foreground">
+                              {formatDate(note.updatedAt)}
+                            </p>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}

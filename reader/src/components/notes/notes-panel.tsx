@@ -8,7 +8,15 @@ import { Separator } from "@/components/ui/separator";
 import { useReaderStore } from "@/stores/reader-store";
 import { NoteEditor } from "./note-editor";
 import { NoteCard } from "./note-card";
+import { NOTE_SCOPES, type NoteScope } from "@/lib/validators/note";
 import type { Note } from "@prisma/client";
+
+const SCOPE_OPTIONS: { value: NoteScope; label: string }[] = [
+  { value: "chapter", label: "Chapter" },
+  { value: "course", label: "Whole course" },
+  { value: "section", label: "Section" },
+  { value: "selection", label: "Selection" },
+];
 
 interface NotesPanelProps {
   courseId: string;
@@ -19,10 +27,13 @@ interface NotesPanelProps {
 export function NotesPanel({ courseId, chapterId, chapterTitle }: NotesPanelProps) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [creating, setCreating] = useState(false);
+  const [newScope, setNewScope] = useState<NoteScope>("chapter");
+  const [filterScope, setFilterScope] = useState<NoteScope | "all">("all");
   const setNotesPanelOpen = useReaderStore((s) => s.setNotesPanelOpen);
 
   const loadNotes = useCallback(async () => {
-    const res = await fetch(`/api/notes?chapterId=${chapterId}`);
+    const params = new URLSearchParams({ chapterId });
+    const res = await fetch(`/api/notes?${params}`);
     if (res.ok) {
       const data = await res.json();
       setNotes(data);
@@ -37,7 +48,12 @@ export function NotesPanel({ courseId, chapterId, chapterTitle }: NotesPanelProp
     const res = await fetch("/api/notes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ courseId, chapterId, content }),
+      body: JSON.stringify({
+        courseId,
+        chapterId,
+        scope: newScope,
+        content,
+      }),
     });
     if (res.ok) {
       setCreating(false);
@@ -58,6 +74,11 @@ export function NotesPanel({ courseId, chapterId, chapterTitle }: NotesPanelProp
     await fetch(`/api/notes/${id}`, { method: "DELETE" });
     setNotes((prev) => prev.filter((n) => n.id !== id));
   };
+
+  const visibleNotes =
+    filterScope === "all"
+      ? notes
+      : notes.filter((n) => (n as Note & { scope?: string }).scope === filterScope);
 
   return (
     <aside className="hidden w-80 shrink-0 animate-slide-in-right flex-col border-l bg-background lg:flex">
@@ -88,11 +109,44 @@ export function NotesPanel({ courseId, chapterId, chapterTitle }: NotesPanelProp
         </div>
       </div>
 
+      {/* Filter tabs */}
+      <div className="flex gap-1 border-b px-3 py-2">
+        {(["all", "chapter", "section", "selection", "course"] as const).map((s) => (
+          <button
+            key={s}
+            onClick={() => setFilterScope(s)}
+            className={`rounded px-2 py-0.5 text-[10px] font-medium capitalize transition-colors ${
+              filterScope === s
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-accent hover:text-foreground"
+            }`}
+          >
+            {s === "all" ? "All" : s}
+          </button>
+        ))}
+      </div>
+
       <ScrollArea className="flex-1">
         <div className="space-y-3 p-4">
           {/* New note editor */}
           {creating && (
             <div className="animate-scale-in rounded-lg border bg-accent/30 p-3">
+              {/* Scope selector */}
+              <div className="mb-2 flex flex-wrap gap-1">
+                {SCOPE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setNewScope(opt.value)}
+                    className={`rounded px-2 py-0.5 text-[10px] font-medium transition-colors ${
+                      newScope === opt.value
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-accent"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
               <NoteEditor
                 initialContent=""
                 onSave={handleCreate}
@@ -102,8 +156,8 @@ export function NotesPanel({ courseId, chapterId, chapterTitle }: NotesPanelProp
             </div>
           )}
 
-          {/* Existing notes */}
-          {notes.length === 0 && !creating && (
+          {/* Empty state */}
+          {visibleNotes.length === 0 && !creating && (
             <div className="py-8 text-center">
               <p className="text-sm text-muted-foreground">No notes yet.</p>
               <Button
@@ -118,7 +172,7 @@ export function NotesPanel({ courseId, chapterId, chapterTitle }: NotesPanelProp
             </div>
           )}
 
-          {notes.map((note, i) => (
+          {visibleNotes.map((note, i) => (
             <div
               key={note.id}
               className="animate-slide-up"

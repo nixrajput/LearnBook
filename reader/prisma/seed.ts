@@ -1,10 +1,10 @@
 import { PrismaClient } from "@prisma/client";
-import { parseMarkdownFile, getCourseDescription, getNotesManifest } from "../src/lib/content/parser";
+import { parseMarkdownFile, getCourseDescription, getCourseManifest } from "../src/lib/content/parser";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  const manifest = getNotesManifest();
+  const manifest = getCourseManifest();
   const courseId = manifest.id;
 
   console.log(`🌱 Seeding collection: "${manifest.title}" (id: ${courseId})`);

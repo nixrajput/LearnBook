@@ -17,17 +17,17 @@ A production-quality personal learning app for reading, annotating, and tracking
 
 ## Tech stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 16 (App Router, Turbopack) |
-| UI | React 19 + Tailwind CSS + shadcn/ui |
-| Fonts | Inter (UI) + JetBrains Mono (code) |
-| Content | MDX via `next-mdx-remote/rsc` |
-| Database | SQLite via Prisma |
-| Client state | Zustand |
-| Theme | next-themes |
-| Validation | Zod |
-| Tests | Vitest |
+| Layer        | Technology                          |
+| ------------ | ----------------------------------- |
+| Framework    | Next.js 16 (App Router, Turbopack)  |
+| UI           | React 19 + Tailwind CSS + shadcn/ui |
+| Fonts        | Inter (UI) + JetBrains Mono (code)  |
+| Content      | MDX via `next-mdx-remote/rsc`       |
+| Database     | SQLite via Prisma                   |
+| Client state | Zustand                             |
+| Theme        | next-themes                         |
+| Validation   | Zod                                 |
+| Tests        | Vitest                              |
 
 ## Setup
 
@@ -43,24 +43,24 @@ Visit [http://localhost:3000](http://localhost:3000).
 
 ## Environment variables
 
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | SQLite database path (default: `file:./dev.db`) |
-| `NOTES_PATH` | Path to the notes collection to seed, relative to `reader/` |
+| Variable       | Description                                                 |
+| -------------- | ----------------------------------------------------------- |
+| `DATABASE_URL` | SQLite database path (default: `file:./dev.db`)             |
+| `NOTES_PATH`   | Path to the notes collection to seed, relative to `reader/` |
 
 ## Available scripts
 
-| Script | Purpose |
-|--------|---------|
-| `npm run dev` | Start development server (Turbopack) |
-| `npm run build` | Production build |
-| `npm run lint` | Run ESLint |
-| `npm run lint:fix` | Auto-fix lint issues |
-| `npm run format` | Format with Prettier |
-| `npm run db:seed` | Parse markdown and seed the database |
-| `npm run db:reset` | Wipe and re-seed |
-| `npm run db:studio` | Open Prisma Studio |
-| `npm test` | Run tests (Vitest) |
+| Script              | Purpose                              |
+| ------------------- | ------------------------------------ |
+| `npm run dev`       | Start development server (Turbopack) |
+| `npm run build`     | Production build                     |
+| `npm run lint`      | Run ESLint                           |
+| `npm run lint:fix`  | Auto-fix lint issues                 |
+| `npm run format`    | Format with Prettier                 |
+| `npm run db:seed`   | Parse markdown and seed the database |
+| `npm run db:reset`  | Wipe and re-seed                     |
+| `npm run db:studio` | Open Prisma Studio                   |
+| `npm test`          | Run tests (Vitest)                   |
 
 ## Project structure
 
@@ -129,6 +129,7 @@ All user data (notes, bookmarks, highlights, progress, streaks) is scoped by `co
 ### Adding auth later
 
 Every API route treats `userId = "default"` implicitly. To add auth:
+
 1. Add a `User` model and `userId` to all user-owned tables.
 2. Add auth middleware (Next-Auth or Clerk).
 3. Replace `"default"` with `session.userId` in `src/app/api/`.

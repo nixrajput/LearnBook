@@ -30,31 +30,33 @@ function estimateReadingTime(wordCount: number): number {
 }
 
 /**
- * Resolve the path to the active notes markdown file.
+ * Resolve the path to the active course markdown file.
  *
  * Resolution order:
  *  1. Explicit `filePath` argument (used by tests and scripts).
- *  2. NOTES_PATH env var (relative to reader/ process.cwd()) +
+ *  2. COURSE_PATH env var (relative to reader/ process.cwd()) +
  *     manifest.json → entryFile.
  *  3. Legacy fallback: content/backend_learning_notes.md relative to cwd.
  */
-export function resolveNotesFilePath(filePath?: string): string {
+export function resolveCourseFilePath(filePath?: string): string {
   if (filePath) return filePath;
 
-  const notesPathEnv = process.env.NOTES_PATH;
-  if (notesPathEnv) {
-    const notesDir = isAbsolute(notesPathEnv) ? notesPathEnv : resolve(process.cwd(), notesPathEnv);
+  const coursePathEnv = process.env.COURSE_PATH;
+  if (coursePathEnv) {
+    const courseDir = isAbsolute(coursePathEnv)
+      ? coursePathEnv
+      : resolve(process.cwd(), coursePathEnv);
 
     let entryFile = "backend_learning_notes.md";
     try {
-      const manifest = JSON.parse(readFileSync(join(notesDir, "manifest.json"), "utf-8")) as {
+      const manifest = JSON.parse(readFileSync(join(courseDir, "manifest.json"), "utf-8")) as {
         entryFile?: string;
       };
       if (manifest.entryFile) entryFile = manifest.entryFile;
     } catch {
       // manifest missing — use default name
     }
-    return join(notesDir, entryFile);
+    return join(courseDir, entryFile);
   }
 
   return join(process.cwd(), "content", "backend_learning_notes.md");
@@ -102,7 +104,7 @@ function parseSections(chapterContent: string): ParsedSection[] {
 }
 
 export function parseMarkdownFile(filePath?: string): ParsedPart[] {
-  const contentPath = resolveNotesFilePath(filePath);
+  const contentPath = resolveCourseFilePath(filePath);
   const raw = readFileSync(contentPath, "utf-8");
   const parts: ParsedPart[] = [];
 
@@ -157,7 +159,7 @@ export function parseMarkdownFile(filePath?: string): ParsedPart[] {
 }
 
 export function getCourseDescription(filePath?: string): string {
-  const contentPath = resolveNotesFilePath(filePath);
+  const contentPath = resolveCourseFilePath(filePath);
   const raw = readFileSync(contentPath, "utf-8");
 
   const firstPartIdx = raw.search(/^# Part [IVXLC]/m);
@@ -168,26 +170,27 @@ export function getCourseDescription(filePath?: string): string {
   return subtitleMatch ? subtitleMatch[1].trim() : "Backend Engineering Study Guide";
 }
 
-/** Read the manifest.json for the active notes collection. */
-export function getNotesManifest(notesPath?: string): {
+/** Read the manifest.json for a course collection. */
+export function getCourseManifest(coursePath?: string): {
   id: string;
   title: string;
   description: string;
+  entryFile?: string;
 } {
-  const rawPath = notesPath ?? process.env.NOTES_PATH;
+  const rawPath = coursePath ?? process.env.COURSE_PATH;
   if (!rawPath) return { id: "unknown", title: "Study Notes", description: "" };
 
-  const notesDir = isAbsolute(rawPath) ? rawPath : resolve(process.cwd(), rawPath);
+  const courseDir = isAbsolute(rawPath) ? rawPath : resolve(process.cwd(), rawPath);
   try {
-    return JSON.parse(readFileSync(join(notesDir, "manifest.json"), "utf-8"));
+    return JSON.parse(readFileSync(join(courseDir, "manifest.json"), "utf-8"));
   } catch {
     return { id: "unknown", title: "Study Notes", description: "" };
   }
 }
 
 /**
- * Returns the courseId for the currently active notes collection.
- * Resolution order:
+ * Returns the courseId for the currently active course.
+ * Always resolved from DB only:
  *  1. UserPreference.activeCourseId from DB (if set and course exists).
  *  2. First course alphabetically in DB.
  */

@@ -6,33 +6,60 @@ import { debounce } from "@/lib/utils/debounce";
 const SCROLL_KEY_PREFIX = "reader-scroll-";
 
 export function useScrollRestoration(chapterSlug: string) {
-  const savedByServer = useRef(false);
-
   // Restore scroll position from localStorage on mount
   useEffect(() => {
-    if (savedByServer.current) return;
     const key = `${SCROLL_KEY_PREFIX}${chapterSlug}`;
     const saved = localStorage.getItem(key);
-    if (saved) {
-      const pct = parseFloat(saved);
-      const el = document.documentElement;
-      const scrollTop = pct * (el.scrollHeight - el.clientHeight);
-      window.scrollTo({ top: scrollTop, behavior: "instant" });
-    }
+    if (!saved) return;
+
+    const pct = parseFloat(saved);
+    let rafId: number;
+    let attempts = 0;
+
+    const tryRestore = () => {
+      const container = document.getElementById("reader-scroll-area");
+      if (container) {
+        const scrollTop = pct * (container.scrollHeight - container.clientHeight);
+        container.scrollTo({ top: scrollTop, behavior: "instant" });
+      } else if (attempts++ < 20) {
+        rafId = requestAnimationFrame(tryRestore);
+      }
+    };
+
+    rafId = requestAnimationFrame(tryRestore);
+    return () => cancelAnimationFrame(rafId);
   }, [chapterSlug]);
 
   const savePosition = useRef(
     debounce((slug: string) => {
-      const el = document.documentElement;
-      const pct = el.scrollTop / (el.scrollHeight - el.clientHeight || 1);
+      const container = document.getElementById("reader-scroll-area");
+      if (!container) return;
+      const pct = container.scrollTop / (container.scrollHeight - container.clientHeight || 1);
       localStorage.setItem(`${SCROLL_KEY_PREFIX}${slug}`, pct.toFixed(4));
     }, 300),
   ).current;
 
   useEffect(() => {
+    let container: HTMLElement | null = null;
+    let rafId: number;
+    let attempts = 0;
+
     const onScroll = () => savePosition(chapterSlug);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+
+    const attach = () => {
+      container = document.getElementById("reader-scroll-area");
+      if (container) {
+        container.addEventListener("scroll", onScroll, { passive: true });
+      } else if (attempts++ < 20) {
+        rafId = requestAnimationFrame(attach);
+      }
+    };
+
+    rafId = requestAnimationFrame(attach);
+    return () => {
+      cancelAnimationFrame(rafId);
+      container?.removeEventListener("scroll", onScroll);
+    };
   }, [chapterSlug, savePosition]);
 }
 

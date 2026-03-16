@@ -32,16 +32,36 @@ export function useReadingProgress(chapterId: string) {
   ).current;
 
   useEffect(() => {
+    let container: HTMLElement | null = null;
+    let rafId: number;
+    let attempts = 0;
+
     const onScroll = () => {
-      const el = document.documentElement;
-      const pct = el.scrollTop / (el.scrollHeight - el.clientHeight || 1);
+      if (!container) return;
+      const pct = container.scrollTop / (container.scrollHeight - container.clientHeight || 1);
       const clamped = Math.min(1, Math.max(0, pct));
       setProgress(clamped);
       updateServer(clamped, chapterId);
     };
 
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    // Poll until the element is available (it's rendered by a sibling component)
+    const attach = () => {
+      container = document.getElementById("reader-scroll-area");
+      if (container) {
+        container.addEventListener("scroll", onScroll, { passive: true });
+        return;
+      }
+      if (attempts++ < 20) {
+        rafId = requestAnimationFrame(attach);
+      }
+    };
+
+    rafId = requestAnimationFrame(attach);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      container?.removeEventListener("scroll", onScroll);
+    };
   }, [chapterId, updateServer]);
 
   return progress;

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface SetActiveCourseButtonProps {
   courseId: string;
@@ -14,11 +15,7 @@ export function SetActiveCourseButton({ courseId, isActive }: SetActiveCourseBut
   const [loading, setLoading] = useState(false);
 
   if (isActive) {
-    return (
-      <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
-        Active
-      </span>
-    );
+    return <Badge variant="success">Active</Badge>;
   }
 
   async function handleActivate() {

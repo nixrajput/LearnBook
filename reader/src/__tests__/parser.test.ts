@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 import {
   parseMarkdownFile,
   getCourseDescription,
-  resolveNotesFilePath,
+  resolveCourseFilePath,
 } from "@/lib/content/parser";
 import { resolve } from "path";
 
@@ -10,9 +10,9 @@ import { resolve } from "path";
 const notesDir = resolve(__dirname, "../../../courses/backend-learning");
 const contentPath = resolve(notesDir, "backend_learning_notes.md");
 
-// Also set env so resolveNotesFilePath works via the env path
+// Also set env so resolveCourseFilePath works via the env path
 beforeAll(() => {
-  process.env.NOTES_PATH = notesDir;
+  process.env.COURSE_PATH = notesDir;
 });
 
 describe("parseMarkdownFile", () => {
@@ -77,9 +77,9 @@ describe("getCourseDescription", () => {
   });
 });
 
-describe("resolveNotesFilePath via NOTES_PATH env", () => {
-  it("resolves to the correct file when NOTES_PATH is set", () => {
-    const resolved = resolveNotesFilePath();
+describe("resolveCourseFilePath via COURSE_PATH env", () => {
+  it("resolves to the correct file when COURSE_PATH is set", () => {
+    const resolved = resolveCourseFilePath();
     expect(resolved).toContain("backend_learning_notes.md");
   });
 });
