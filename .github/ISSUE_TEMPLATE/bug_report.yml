@@ -1,0 +1,74 @@
+name: Bug Report
+description: Report a bug or unexpected behavior in LearnBook
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+assignees: ["nixrajput"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before submitting, please check if this bug has already been reported.
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - Critical — app crash or data loss
+        - High — major feature broken
+        - Medium — minor functionality affected
+        - Low — cosmetic or edge case
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Clear description of the bug — what you expected vs. what actually occurred.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to ...
+        2. Click ...
+        3. See error
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of the app is affected?
+      options:
+        - Reader (chapter view)
+        - Course list / detail
+        - Notes panel
+        - Bookmarks
+        - Progress tracking
+        - Sidebar / TOC
+        - Seeding / DB
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser, OS, and screen size if relevant.
+      placeholder: "e.g. Chrome 123 / macOS 14 / desktop"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Paste any console errors, stack traces, or attach screenshots.
+      render: shell
