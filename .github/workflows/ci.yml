@@ -5,6 +5,10 @@ on:
     branches: [main]
   pull_request:
 
+defaults:
+  run:
+    working-directory: reader
+
 jobs:
   lint:
     name: Lint & Format
@@ -15,6 +19,7 @@ jobs:
         with:
           node-version: 22
           cache: "npm"
+          cache-dependency-path: reader/package-lock.json
       - run: npm ci
       - run: npm run lint
       - run: npm run format:check
@@ -32,6 +37,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
+          cache-dependency-path: reader/package-lock.json
       - run: npm ci
       - run: npm run test
 
@@ -45,5 +51,6 @@ jobs:
         with:
           node-version: 22
           cache: "npm"
+          cache-dependency-path: reader/package-lock.json
       - run: npm ci
       - run: npm run build

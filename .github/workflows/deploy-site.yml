@@ -16,6 +16,10 @@ concurrency:
   group: vercel-${{ github.ref }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    working-directory: reader
+
 jobs:
   deploy:
     name: Deploy
@@ -30,6 +34,7 @@ jobs:
         with:
           node-version: 22
           cache: "npm"
+          cache-dependency-path: reader/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -45,18 +50,16 @@ jobs:
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
+        working-directory: .
 
       - name: Pull Vercel environment
         run: vercel pull --yes --environment=${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: reader
 
       - name: Build on Vercel
         run: vercel build ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: reader
 
       - name: Deploy to Vercel
         id: vercel-deploy
         run: |
           url=$(vercel deploy --prebuilt ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tail -1)
           echo "url=$url" >> $GITHUB_OUTPUT
-        working-directory: reader
