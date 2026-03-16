@@ -1,0 +1,250 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 224 71.4% 4.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 71.4% 4.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71.4% 4.1%;
+    --primary: 220.9 39.3% 11%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 220.9 39.3% 11%;
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220.9 39.3% 11%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 224 71.4% 4.1%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
+    --card: 224 71.4% 4.1%;
+    --card-foreground: 210 20% 98%;
+    --popover: 224 71.4% 4.1%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 210 20% 98%;
+    --primary-foreground: 220.9 39.3% 11%;
+    --secondary: 215 27.9% 16.9%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 216 12.2% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground;
+  }
+
+  code,
+  pre,
+  kbd,
+  samp {
+    @apply font-mono;
+  }
+}
+
+/* Scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Prose customizations */
+.prose pre {
+  @apply rounded-lg border;
+}
+
+.prose pre code {
+  @apply bg-transparent p-0 text-current;
+}
+
+/* Highlight colors */
+mark {
+  @apply rounded-sm bg-yellow-200 px-0.5 text-inherit dark:bg-yellow-800;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-border;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground;
+}
+
+/* ─── Animation keyframes ─────────────────────────────────────────────────── */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -200% center;
+  }
+  to {
+    background-position: 200% center;
+  }
+}
+
+@keyframes progress-fill {
+  from {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  to {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+/* ─── Animation utility classes ──────────────────────────────────────────── */
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out both;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.35s ease-out both;
+  }
+
+  .animate-slide-down {
+    animation: slide-down 0.25s ease-out both;
+  }
+
+  .animate-slide-in-left {
+    animation: slide-in-left 0.3s ease-out both;
+  }
+
+  .animate-slide-in-right {
+    animation: slide-in-right 0.3s ease-out both;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.25s ease-out both;
+  }
+
+  /* Stagger helpers — pair with animate-slide-up / animate-fade-in */
+  .stagger-1 {
+    animation-delay: 60ms;
+  }
+  .stagger-2 {
+    animation-delay: 120ms;
+  }
+  .stagger-3 {
+    animation-delay: 180ms;
+  }
+  .stagger-4 {
+    animation-delay: 240ms;
+  }
+  .stagger-5 {
+    animation-delay: 300ms;
+  }
+  .stagger-6 {
+    animation-delay: 360ms;
+  }
+
+  /* Shimmer skeleton override */
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 25%,
+      hsl(var(--accent)) 50%,
+      hsl(var(--muted)) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
+  }
+}

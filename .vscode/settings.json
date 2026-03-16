@@ -1,0 +1,17 @@
+{
+  "cSpell.words": [
+    "cursorrules",
+    "frontmatter",
+    "Invokable",
+    "learnbook",
+    "turbopack",
+    "vercel",
+    "wordmark"
+  ],
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": ".github/workflows/*.yml"
+  },
+  "yaml.customTags": [],
+  "yaml.validate": true,
+  "github-actions.workflows.pinned.refresh.enabled": false
+}

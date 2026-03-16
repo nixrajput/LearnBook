@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+DIM='\033[2m'
+BOLD='\033[1m'
+NC='\033[0m'
+
+step() {
+  echo -e "${CYAN}${BOLD}[pre-push]${NC} ${YELLOW}$1...${NC}"
+}
+
+ok() {
+  echo -e "${GREEN}${BOLD}✔${NC} $1"
+}
+
+fail() {
+  echo -e "${RED}${BOLD}✘ [pre-push] FAILED:${NC} $1${RED}. Push aborted.${NC}"
+  exit 1
+}
+
+warn() {
+  echo -e "${YELLOW}${BOLD}⚠${NC} $1"
+}
+
+# Check if --no-sync flag was passed via SKIP_SYNC env var or push.extraHeader
+# Skip sync check with: SKIP_SYNC=1 git push
+if [ "${SKIP_SYNC:-0}" = "1" ]; then
+  echo -e "${DIM}[pre-push] Skipping main branch sync check (SKIP_SYNC=1).${NC}"
+else
+  step "Checking sync with origin/main"
+  if git fetch origin main --quiet 2>/dev/null; then
+    BEHIND=$(git rev-list --count HEAD..origin/main 2>/dev/null || echo 0)
+    if [ "$BEHIND" -gt 0 ]; then
+      echo -e "${RED}${BOLD}✘ [pre-push] FAILED:${NC} Your branch is ${BOLD}${BEHIND} commit(s) behind${NC}${RED} origin/main.${NC}"
+      echo -e "${YELLOW}  Run: ${BOLD}git pull --rebase origin main${NC}${YELLOW} then retry, or skip with: ${BOLD}SKIP_SYNC=1 git push${NC}"
+      exit 1
+    fi
+    ok "Branch is in sync with origin/main"
+  else
+    warn "Could not reach origin/main — skipping sync check"
+  fi
+fi
+
+step "Running lint"
+npm run lint || fail "lint"
+ok "lint"
+
+step "Running format check"
+npm run format:check || fail "format:check"
+ok "format:check"
+
+step "Running build"
+npm run build || fail "build"
+ok "build"
+
+echo -e "\n${GREEN}${BOLD}✔ All pre-push checks passed.${NC}"
