@@ -45,8 +45,8 @@ All contributors are expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md
 3. **Set up the database:**
 
    ```bash
-   cp reader/.env.example reader/.env
-   # Edit reader/.env — set NOTES_PATH to a course folder under courses/
+   cp app/.env.example app/.env
+   # Edit app/.env — set NOTES_PATH to a course folder under courses/
    npm run db:push
    npm run db:seed
    ```
@@ -151,7 +151,7 @@ Key conventions:
 
 ## Testing
 
-Tests live in `reader/src/__tests__/` and use **Vitest**.
+Tests live in `app/src/__tests__/` and use **Vitest**.
 
 ```bash
 npm test

@@ -91,7 +91,7 @@ learnbook/
 │   └── <collection-id>/
 │       ├── manifest.json     # Course metadata
 │       └── <entryFile>.md    # Course content (Markdown)
-├── reader/                   # Next.js application
+├── app/                   # Next.js application
 │   ├── prisma/
 │   │   ├── schema.prisma     # Database schema
 │   │   └── seed.ts           # Content ingestion script
@@ -155,20 +155,20 @@ npm install
 Copy the example file:
 
 ```bash
-cp reader/.env.example reader/.env
+cp app/.env.example app/.env
 ```
 
-| Variable       | Required        | Default         | Description                                                                                      |
-| -------------- | --------------- | --------------- | ------------------------------------------------------------------------------------------------ |
-| `DATABASE_URL` | Yes             | `file:./dev.db` | SQLite database path, relative to `reader/`                                                      |
-| `NOTES_PATH`   | Seed-time only  | —               | Path to the course collection to seed, relative to `reader/` (e.g. `../courses/my-course`). Not used at runtime — the active course is stored in the database. |
+| Variable       | Required       | Default         | Description                                                                                                                                                 |
+| -------------- | -------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL` | Yes            | `file:./dev.db` | SQLite database path, relative to `app/`                                                                                                                    |
+| `NOTES_PATH`   | Seed-time only | —               | Path to the course collection to seed, relative to `app/` (e.g. `../courses/my-course`). Not used at runtime — the active course is stored in the database. |
 
 > **Note:** Once at least one course is seeded, `NOTES_PATH` is not required to run the app. The active course is stored in `UserPreference.activeCourseId` and can be changed from the `/courses` page.
 
 ### Database Setup
 
 ```bash
-# Push the Prisma schema to SQLite (creates reader/prisma/dev.db)
+# Push the Prisma schema to SQLite (creates app/prisma/dev.db)
 npm run db:push
 
 # Parse the course at NOTES_PATH and seed the database
@@ -242,7 +242,7 @@ More content...
 ### Adding a New Course
 
 1. Create `courses/<your-collection>/manifest.json` and the Markdown file.
-2. Update `NOTES_PATH` in `reader/.env`:
+2. Update `NOTES_PATH` in `app/.env`:
    ```bash
    NOTES_PATH="../courses/<your-collection>"
    ```

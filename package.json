@@ -3,30 +3,33 @@
   "version": "0.1.0",
   "private": true,
   "workspaces": [
-    "reader"
+    "app"
   ],
   "scripts": {
     "prepare": "husky",
-    "dev": "npm run dev --workspace=reader",
-    "build": "npm run build --workspace=reader",
-    "test": "npm run test --workspace=reader",
-    "lint": "npm run lint --workspace=reader",
-    "lint:fix": "npm run lint:fix --workspace=reader",
-    "format": "npm run format --workspace=reader",
-    "format:check": "npm run format:check --workspace=reader",
-    "db:seed": "npm run db:seed --workspace=reader",
-    "db:reset": "npm run db:reset --workspace=reader"
+    "dev": "npm run dev --workspace=app",
+    "build": "npm run build --workspace=app",
+    "test": "npm run test --workspace=app",
+    "lint": "npm run lint --workspace=app",
+    "lint:fix": "npm run lint:fix --workspace=app",
+    "format": "npm run format --workspace=app",
+    "format:check": "npm run format:check --workspace=app",
+    "db:seed": "npm run db:seed --workspace=app",
+    "db:reset": "npm run db:reset --workspace=app"
   },
   "devDependencies": {
     "husky": "^9.1.7",
     "lint-staged": "^15.5.1"
   },
+  "overrides": {
+    "next": "16.1.6"
+  },
   "lint-staged": {
-    "reader/src/**/*.{ts,tsx}": [
-      "eslint --config reader/eslint.config.mjs --fix",
+    "app/src/**/*.{ts,tsx}": [
+      "eslint --config app/eslint.config.mjs --fix",
       "prettier --write"
     ],
-    "reader/src/**/*.css": [
+    "app/src/**/*.css": [
       "prettier --write"
     ]
   }

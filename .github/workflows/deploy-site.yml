@@ -4,11 +4,11 @@ on:
   push:
     branches: [main]
     paths:
-      - "reader/**"
+      - "app/**"
       - ".github/workflows/deploy-site.yml"
   pull_request:
     paths:
-      - "reader/**"
+      - "app/**"
       - ".github/workflows/deploy-site.yml"
   workflow_dispatch:
 
@@ -48,15 +48,15 @@ jobs:
 
       - name: Pull Vercel environment
         run: vercel pull --yes --environment=${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: reader
+        working-directory: app
 
       - name: Build on Vercel
         run: vercel build ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: reader
+        working-directory: app
 
       - name: Deploy to Vercel
         id: vercel-deploy
         run: |
           url=$(vercel deploy --prebuilt ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | tail -1)
           echo "url=$url" >> $GITHUB_OUTPUT
-        working-directory: reader
+        working-directory: app
