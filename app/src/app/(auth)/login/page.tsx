@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { BookOpen, Github } from "lucide-react";
 import { signIn } from "@/auth";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,6 @@ export const metadata: Metadata = {
   title: "Sign In",
 };
 
-// Google icon as inline SVG (not in lucide-react)
 function GoogleIcon() {
   return (
     <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
@@ -33,25 +33,28 @@ function GoogleIcon() {
 
 export default function LoginPage() {
   return (
-    <div className="w-full max-w-sm">
+    <div className="w-full max-w-sm animate-fade-in">
       {/* Logo */}
-      <div className="mb-8 flex flex-col items-center gap-2 text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+      <div className="mb-10 flex flex-col items-center gap-3 text-center">
+        <Link
+          href="/"
+          className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 transition-transform duration-200 hover:scale-105"
+        >
           <BookOpen className="h-6 w-6 text-primary" />
-        </div>
-        <h1 className="text-2xl font-bold tracking-tight">Welcome to LearnBook</h1>
+        </Link>
+        <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
         <p className="text-sm text-muted-foreground">Sign in to continue your learning journey</p>
       </div>
 
       {/* OAuth buttons */}
-      <div className="flex flex-col gap-3">
+      <div className="stagger-1 flex animate-slide-up flex-col gap-3">
         <form
           action={async () => {
             "use server";
             await signIn("google", { redirectTo: "/dashboard" });
           }}
         >
-          <Button type="submit" variant="outline" className="w-full gap-2">
+          <Button type="submit" variant="outline" className="w-full gap-2.5 py-5 text-[13px]">
             <GoogleIcon />
             Continue with Google
           </Button>
@@ -63,15 +66,29 @@ export default function LoginPage() {
             await signIn("github", { redirectTo: "/dashboard" });
           }}
         >
-          <Button type="submit" variant="outline" className="w-full gap-2">
+          <Button type="submit" variant="outline" className="w-full gap-2.5 py-5 text-[13px]">
             <Github className="h-4 w-4" />
             Continue with GitHub
           </Button>
         </form>
       </div>
 
-      <p className="mt-6 text-center text-xs text-muted-foreground">
-        By signing in, you agree to our Terms of Service and Privacy Policy.
+      <p className="stagger-2 mt-8 animate-slide-up text-center text-xs text-muted-foreground">
+        By signing in, you agree to our{" "}
+        <Link
+          href="/terms"
+          className="underline underline-offset-2 transition-colors hover:text-foreground"
+        >
+          Terms of Service
+        </Link>{" "}
+        and{" "}
+        <Link
+          href="/privacy"
+          className="underline underline-offset-2 transition-colors hover:text-foreground"
+        >
+          Privacy Policy
+        </Link>
+        .
       </p>
     </div>
   );

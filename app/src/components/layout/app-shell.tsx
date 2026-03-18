@@ -20,7 +20,7 @@ export function AppShell({ children, user }: AppShellProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden bg-background">
+    <div className="flex h-screen flex-col overflow-hidden bg-background">
       <TopNav onMenuClick={() => setMobileNavOpen(true)} user={user} />
       <MobileNav open={mobileNavOpen} onOpenChange={setMobileNavOpen} />
       <main className="flex flex-1 animate-fade-in flex-col overflow-y-auto">{children}</main>

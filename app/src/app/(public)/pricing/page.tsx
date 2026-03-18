@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
@@ -88,25 +88,31 @@ function FeatureValue({ value }: { value: string | boolean }) {
 
 export default function PricingPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-16">
+    <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 md:py-24">
       {/* Header */}
-      <div className="mb-12 text-center">
-        <h1 className="mb-3 text-4xl font-bold tracking-tight">Simple, transparent pricing</h1>
-        <p className="text-lg text-muted-foreground">
+      <div className="mb-14 text-center">
+        <div className="mb-4 inline-flex animate-fade-in items-center gap-2 rounded-full border bg-muted/50 px-4 py-1.5 text-sm text-muted-foreground backdrop-blur-sm">
+          <Sparkles className="h-3.5 w-3.5 text-primary" />
+          <span>Plans for every learner</span>
+        </div>
+        <h1 className="mb-4 animate-slide-up text-4xl font-bold tracking-tight md:text-5xl">
+          Simple, transparent pricing
+        </h1>
+        <p className="stagger-1 animate-slide-up text-lg text-muted-foreground">
           Start free. Upgrade when you need more power.
         </p>
       </div>
 
       {/* Plan cards */}
-      <div className="mb-16 grid gap-6 md:grid-cols-3">
-        {plans.map((plan) => (
+      <div className="mb-20 grid gap-6 md:grid-cols-3">
+        {plans.map((plan, i) => (
           <div
             key={plan.key}
-            className={`relative rounded-xl border-2 bg-card p-8 ${plan.color} ${plan.popular ? "shadow-lg" : ""}`}
+            className={`stagger-${i + 1} relative animate-slide-up rounded-xl border-2 bg-card p-8 transition-all duration-200 hover:shadow-lg ${plan.color} ${plan.popular ? "shadow-lg shadow-primary/10 dark:shadow-primary/5" : ""}`}
           >
             {plan.popular && (
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
+                <span className="rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground shadow-sm">
                   Most Popular
                 </span>
               </div>
@@ -140,7 +146,7 @@ export default function PricingPage() {
       </div>
 
       {/* Feature comparison table */}
-      <div className="overflow-hidden rounded-xl border bg-card">
+      <div className="animate-fade-in overflow-hidden rounded-xl border bg-card shadow-sm">
         <div className="border-b px-6 py-4">
           <h2 className="font-semibold">Full Feature Comparison</h2>
         </div>
@@ -163,7 +169,10 @@ export default function PricingPage() {
             </thead>
             <tbody>
               {comparisonRows.map((row, i) => (
-                <tr key={row.label} className={i % 2 === 0 ? "bg-background" : "bg-muted/20"}>
+                <tr
+                  key={row.label}
+                  className={`transition-colors ${i % 2 === 0 ? "bg-background" : "bg-muted/20"}`}
+                >
                   <td className="px-6 py-3 text-sm text-muted-foreground">{row.label}</td>
                   {plans.map((plan) => (
                     <td key={plan.key} className="px-6 py-3 text-center">
@@ -179,13 +188,15 @@ export default function PricingPage() {
         </div>
       </div>
 
-      {/* FAQ / CTA */}
-      <div className="mt-12 text-center">
+      {/* CTA */}
+      <div className="mt-16 animate-slide-up text-center">
         <p className="mb-4 text-muted-foreground">
           Questions? All plans include a 14-day money-back guarantee.
         </p>
-        <Button size="lg" asChild>
-          <Link href="/login">Get Started Free</Link>
+        <Button size="lg" asChild className="gap-2 shadow-lg shadow-primary/20">
+          <Link href="/login">
+            Get Started Free <ArrowRight className="h-4 w-4" />
+          </Link>
         </Button>
       </div>
     </div>

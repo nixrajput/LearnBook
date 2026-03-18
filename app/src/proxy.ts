@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 
-const PUBLIC_PATHS = ["/", "/pricing", "/login", "/api/auth"];
+const PUBLIC_PATHS = ["/", "/pricing", "/login", "/terms", "/privacy", "/api/auth"];
 
 // next-auth v5 beta: overload resolution doesn't infer req type in strict mode
 

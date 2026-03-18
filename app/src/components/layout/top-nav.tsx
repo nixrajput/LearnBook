@@ -46,31 +46,43 @@ export function TopNav({ onMenuClick, user }: TopNavProps) {
         </Button>
 
         {/* Logo */}
-        <Link href="/dashboard" className="flex shrink-0 items-center gap-2 font-semibold">
+        <Link
+          href="/dashboard"
+          className="flex shrink-0 items-center gap-2 font-semibold transition-colors hover:text-primary"
+        >
           <BookOpen className="h-5 w-5 text-primary" />
           <span className="hidden sm:inline">LearnBook</span>
         </Link>
 
         {/* Desktop nav */}
         <nav className="ml-4 hidden items-center gap-1 md:flex">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors",
-                pathname === item.href ||
-                  (item.href !== "/" &&
-                    (pathname.startsWith(item.href) ||
-                      (item.href === "/courses" && pathname.startsWith("/course/"))))
-                  ? "bg-accent font-medium text-accent-foreground"
-                  : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
-              )}
-            >
-              <item.icon className="h-4 w-4" />
-              {item.label}
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            const isActive =
+              pathname === item.href ||
+              (item.href !== "/" &&
+                (pathname.startsWith(item.href) ||
+                  (item.href === "/courses" && pathname.startsWith("/course/"))));
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "relative flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-all duration-200",
+                  isActive
+                    ? "bg-accent font-medium text-accent-foreground"
+                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+                )}
+              >
+                <item.icon
+                  className={cn(
+                    "h-4 w-4 transition-transform duration-200",
+                    !isActive && "group-hover:scale-110",
+                  )}
+                />
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="flex-1" />
@@ -79,7 +91,7 @@ export function TopNav({ onMenuClick, user }: TopNavProps) {
         <Button
           variant="outline"
           size="sm"
-          className="hidden gap-2 text-muted-foreground sm:flex"
+          className="hidden gap-2 text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:shadow-sm sm:flex"
           onClick={() => setSearchOpen(true)}
         >
           <Search className="h-4 w-4" />
@@ -97,10 +109,14 @@ export function TopNav({ onMenuClick, user }: TopNavProps) {
           <Search className="h-4 w-4" />
         </Button>
 
-        {/* Theme toggle: light → dark → system → light */}
+        {/* User menu */}
+        {user && <UserMenu user={user} />}
+
+        {/* Theme toggle — last in nav */}
         <Button
           variant="ghost"
           size="icon"
+          className="transition-all duration-200 hover:bg-accent"
           onClick={() => {
             if (theme === "light") setTheme("dark");
             else if (theme === "dark") setTheme("system");
@@ -113,9 +129,6 @@ export function TopNav({ onMenuClick, user }: TopNavProps) {
           {(!mounted || theme === "system") && <Monitor className="h-4 w-4" />}
           <span className="sr-only">Toggle theme</span>
         </Button>
-
-        {/* User menu */}
-        {user && <UserMenu user={user} />}
       </div>
     </header>
   );
