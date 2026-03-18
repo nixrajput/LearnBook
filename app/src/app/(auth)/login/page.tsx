@@ -5,7 +5,7 @@ import { signIn } from "@/auth";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "Sign In",
+  title: "Login",
 };
 
 function GoogleIcon() {
@@ -43,7 +43,7 @@ export default function LoginPage() {
           <BookOpen className="h-6 w-6 text-primary" />
         </Link>
         <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
-        <p className="text-sm text-muted-foreground">Sign in to continue your learning journey</p>
+        <p className="text-sm text-muted-foreground">Log in to continue your learning journey</p>
       </div>
 
       {/* OAuth buttons */}

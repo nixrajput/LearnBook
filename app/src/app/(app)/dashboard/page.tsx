@@ -18,8 +18,14 @@ import {
 } from "lucide-react";
 import { db } from "@/lib/db";
 import { getActiveCourseId } from "@/lib/content/parser";
+import { getReadingSpeedStats, getFocusInsights, getCompletionForecast } from "@/lib/content";
 import { formatRelative } from "@/lib/utils/date";
 import { requireSession } from "@/lib/auth/session";
+import { ReadingGoalCard } from "@/components/dashboard/reading-goal-card";
+import { SpeedTrendChart } from "@/components/dashboard/speed-trend-chart";
+import { CompletionForecast } from "@/components/dashboard/completion-forecast";
+import { FocusInsights } from "@/components/dashboard/focus-insights";
+import { FeatureGate } from "@/components/plan/feature-gate";
 
 async function getActiveCourseData(userId: string, courseId: string) {
   const [allChapters, allProgress, recentNotes, bookmarksCount, streaks, parts, notesCount] =
@@ -147,6 +153,9 @@ async function getActiveCourseData(userId: string, courseId: string) {
   const activeDays = streaks.filter((s) => s.minutesRead > 0).length;
   const avgSessionMin = activeDays > 0 ? Math.round(totalReadingMin / activeDays) : 0;
 
+  // Today's reading time
+  const todayMin = streakByDate.get(today) ?? 0;
+
   // This week's reading time (sum of minutesRead from streaks)
   const weekStart = new Date(now);
   weekStart.setDate(weekStart.getDate() - 7);
@@ -178,15 +187,24 @@ async function getActiveCourseData(userId: string, courseId: string) {
     dayBuckets,
     avgSessionMin,
     thisWeekMin,
+    todayMin,
   };
 }
 
 export default async function HomePage() {
   const user = await requireSession();
   const courseId = await getActiveCourseId(user.id);
-  const [data, activeCourse] = await Promise.all([
+  const plan = user.plan ?? "FREE";
+  const isPro = plan === "PRO" || plan === "PREMIUM";
+  const isPremium = plan === "PREMIUM";
+
+  const [data, activeCourse, goal, speedStats, focusData, forecast] = await Promise.all([
     getActiveCourseData(user.id, courseId),
     db.course.findUnique({ where: { id: courseId }, select: { title: true } }),
+    isPro ? db.readingGoal.findUnique({ where: { userId: user.id } }) : null,
+    isPremium ? getReadingSpeedStats(user.id) : null,
+    isPremium ? getFocusInsights(user.id) : null,
+    isPremium ? getCompletionForecast(user.id, courseId) : null,
   ]);
 
   const totalReadingLabel =
@@ -502,6 +520,34 @@ export default async function HomePage() {
         </div>
       </div>
 
+      {/* ── Reading Goals (PRO+) ──────────────────────────────────────────────── */}
+      <div className="mb-8">
+        <FeatureGate currentPlan={plan} requiredPlan="PRO" feature="Reading Goals">
+          <ReadingGoalCard
+            dailyMinutes={goal?.dailyMinutes ?? 30}
+            weeklyChapters={goal?.weeklyChapters ?? 5}
+            todayMinutes={data.todayMin}
+            weekChapters={data.last7Chapters}
+            isPro={isPro}
+          />
+        </FeatureGate>
+      </div>
+
+      {/* ── Premium Analytics ──────────────────────────────────────────────────── */}
+      <div className="mb-8">
+        <FeatureGate currentPlan={plan} requiredPlan="PREMIUM" feature="Advanced Analytics">
+          {isPremium ? (
+            <div className="grid gap-6 p-6 md:grid-cols-2">
+              {speedStats && <SpeedTrendChart stats={speedStats} />}
+              {forecast && <CompletionForecast forecast={forecast} />}
+              {focusData && <FocusInsights insights={focusData} />}
+            </div>
+          ) : (
+            <PremiumAnalyticsPlaceholder />
+          )}
+        </FeatureGate>
+      </div>
+
       {/* ── Recent notes + Quick links ────────────────────────────────────────── */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Recent notes */}
@@ -672,5 +718,86 @@ function QuickLink({
       </div>
       <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
     </Link>
+  );
+}
+
+/** Static placeholder content for the premium analytics gate so blur has visible UI. */
+/** Static placeholder for premium analytics so blur preview has visible UI. */
+function PremiumAnalyticsPlaceholder() {
+  return (
+    <div className="rounded-xl border bg-card">
+      <div className="flex items-center justify-between border-b px-6 py-4">
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-violet-500/10">
+            <BarChart3 className="h-3.5 w-3.5 text-violet-500" />
+          </div>
+          <h3 className="font-semibold">Advanced Analytics</h3>
+        </div>
+        <span className="text-xs text-muted-foreground">Premium</span>
+      </div>
+      <div className="grid gap-6 p-6 md:grid-cols-2">
+        {/* Speed Trends */}
+        <div className="rounded-lg bg-muted/40 p-4">
+          <h4 className="mb-3 flex items-center gap-2 text-sm font-medium">
+            <TrendingUp className="h-3.5 w-3.5 text-sky-500" />
+            Reading Speed
+          </h4>
+          <div className="mb-2 flex items-baseline gap-2">
+            <span className="text-2xl font-bold tabular-nums">248</span>
+            <span className="text-xs text-muted-foreground">WPM avg</span>
+          </div>
+          <div className="flex h-14 items-end gap-1">
+            {[40, 55, 45, 70, 65, 80, 60, 75, 85, 70].map((h, i) => (
+              <div key={i} className="flex-1 rounded-t bg-sky-500/40" style={{ height: `${h}%` }} />
+            ))}
+          </div>
+        </div>
+
+        {/* Completion Forecast */}
+        <div className="rounded-lg bg-muted/40 p-4">
+          <h4 className="mb-3 flex items-center gap-2 text-sm font-medium">
+            <Calendar className="h-3.5 w-3.5 text-amber-500" />
+            Completion Forecast
+          </h4>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <div className="text-2xl font-bold tabular-nums">12</div>
+              <div className="text-xs text-muted-foreground">chapters left</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold tabular-nums">~3 wk</div>
+              <div className="text-xs text-muted-foreground">estimated</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Focus Insights */}
+        <div className="rounded-lg bg-muted/40 p-4 md:col-span-2">
+          <h4 className="mb-3 flex items-center gap-2 text-sm font-medium">
+            <Clock className="h-3.5 w-3.5 text-violet-500" />
+            Focus Insights
+          </h4>
+          <div className="flex h-12 items-end gap-1">
+            {Array.from({ length: 24 }, (_, i) => {
+              const h = i >= 8 && i <= 22 ? 20 + Math.sin((i - 8) * 0.5) * 60 : 5;
+              return (
+                <div
+                  key={i}
+                  className="flex-1 rounded-t bg-violet-500/40"
+                  style={{ height: `${Math.max(4, h)}%` }}
+                />
+              );
+            })}
+          </div>
+          <div className="mt-2 flex justify-between text-[10px] text-muted-foreground">
+            <span>12am</span>
+            <span>6am</span>
+            <span>12pm</span>
+            <span>6pm</span>
+            <span>12am</span>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

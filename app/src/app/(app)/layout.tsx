@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { AppShell } from "@/components/layout/app-shell";
 import { SearchDialog } from "@/components/search/search-dialog";
+import { SiteFooter } from "@/components/layout/site-footer";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -9,7 +10,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <>
-      <AppShell user={session.user}>{children}</AppShell>
+      <AppShell user={session.user}>
+        {children}
+        <SiteFooter />
+      </AppShell>
       <SearchDialog />
     </>
   );

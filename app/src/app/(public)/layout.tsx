@@ -1,9 +1,28 @@
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
+import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { AppShell } from "@/components/layout/app-shell";
+import { SearchDialog } from "@/components/search/search-dialog";
+import { SiteFooter } from "@/components/layout/site-footer";
 
-export default function PublicLayout({ children }: { children: React.ReactNode }) {
+export default async function PublicLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
+  const isLoggedIn = !!session?.user;
+
+  if (isLoggedIn) {
+    return (
+      <>
+        <AppShell user={session.user}>
+          {children}
+          <SiteFooter />
+        </AppShell>
+        <SearchDialog />
+      </>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       {/* Nav */}
@@ -21,7 +40,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               <Link href="/pricing">Pricing</Link>
             </Button>
             <Button size="sm" asChild>
-              <Link href="/login">Sign In</Link>
+              <Link href="/login">Login</Link>
             </Button>
             <ThemeToggle />
           </div>
@@ -30,33 +49,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
       <main className="flex-1">{children}</main>
 
-      <footer className="border-t bg-muted/30">
-        <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-          <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-between">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <BookOpen className="h-4 w-4 text-primary" />
-              <span>LearnBook</span>
-            </div>
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <Link href="/pricing" className="transition-colors hover:text-foreground">
-                Pricing
-              </Link>
-              <Link href="/terms" className="transition-colors hover:text-foreground">
-                Terms
-              </Link>
-              <Link href="/privacy" className="transition-colors hover:text-foreground">
-                Privacy
-              </Link>
-              <Link href="/login" className="transition-colors hover:text-foreground">
-                Sign In
-              </Link>
-            </div>
-          </div>
-          <div className="mt-6 border-t pt-6 text-center text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} LearnBook. All rights reserved.
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

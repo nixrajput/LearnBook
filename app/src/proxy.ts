@@ -1,11 +1,24 @@
 import { auth } from "@/auth";
 
-const PUBLIC_PATHS = ["/", "/pricing", "/login", "/terms", "/privacy", "/api/auth"];
+const PUBLIC_PATHS = [
+  "/",
+  "/pricing",
+  "/login",
+  "/terms",
+  "/privacy",
+  "/api/auth",
+  "/api/stripe/webhook",
+];
 
 // next-auth v5 beta: overload resolution doesn't infer req type in strict mode
 
 export default auth((req: any) => {
   const pathname = req.nextUrl.pathname;
+
+  // Logged-in users visiting /login → redirect to dashboard
+  if (pathname === "/login" && req.auth) {
+    return Response.redirect(new URL("/dashboard", req.url));
+  }
 
   // Public paths — no auth needed
   if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))) {

@@ -16,6 +16,7 @@ import {
   Globe,
   TrendingUp,
 } from "lucide-react";
+import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
@@ -134,7 +135,10 @@ const pricingPreview = [
   },
 ];
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const session = await auth();
+  const isLoggedIn = !!session?.user;
+
   return (
     <>
       {/* ── Hero ──────────────────────────────────────────────────────────────── */}
@@ -159,14 +163,24 @@ export default function LandingPage() {
             built for serious learners who want to retain more.
           </p>
           <div className="stagger-2 flex animate-slide-up flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <Button size="lg" asChild className="gap-2 px-8 shadow-lg shadow-primary/20">
-              <Link href="/login">
-                Get Started Free <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link href="/pricing">View Pricing</Link>
-            </Button>
+            {isLoggedIn ? (
+              <Button size="lg" asChild className="gap-2 px-8 shadow-lg shadow-primary/20">
+                <Link href="/dashboard">
+                  Go to Dashboard <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button size="lg" asChild className="gap-2 px-8 shadow-lg shadow-primary/20">
+                  <Link href="/login">
+                    Get Started Free <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" asChild>
+                  <Link href="/pricing">View Pricing</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
 
@@ -365,7 +379,9 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 <Button className="w-full" variant={p.variant} asChild>
-                  <Link href={p.href}>{p.cta}</Link>
+                  <Link href={isLoggedIn ? "/pricing" : p.href}>
+                    {isLoggedIn ? "View Plans" : p.cta}
+                  </Link>
                 </Button>
               </div>
             ))}
@@ -394,8 +410,9 @@ export default function LandingPage() {
           </p>
           <div className="stagger-2 animate-slide-up">
             <Button size="lg" asChild className="gap-2 px-8 shadow-lg shadow-primary/20">
-              <Link href="/login">
-                Get Started Free <ArrowRight className="h-4 w-4" />
+              <Link href={isLoggedIn ? "/dashboard" : "/login"}>
+                {isLoggedIn ? "Go to Dashboard" : "Get Started Free"}{" "}
+                <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
           </div>

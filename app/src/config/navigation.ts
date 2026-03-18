@@ -1,11 +1,10 @@
-import { LayoutDashboard, BookOpen, BookMarked, StickyNote, Settings, User } from "lucide-react";
+import { LayoutDashboard, BookOpen, BookMarked, StickyNote } from "lucide-react";
 
 export const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Courses", href: "/courses", icon: BookOpen },
   { label: "Notes", href: "/notes", icon: StickyNote },
   { label: "Bookmarks", href: "/bookmarks", icon: BookMarked },
-  { label: "Settings", href: "/settings", icon: Settings },
 ];
 
 export const keyboardShortcuts = {

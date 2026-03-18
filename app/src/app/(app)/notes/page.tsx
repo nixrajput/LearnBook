@@ -5,6 +5,8 @@ import { formatDate } from "@/lib/utils/date";
 import { StickyNote, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { requireSession } from "@/lib/auth/session";
+import { getPlanLimits } from "@/lib/plans";
+import { UsageIndicator } from "@/components/plan/usage-indicator";
 
 export const metadata: Metadata = { title: "My Notes" };
 
@@ -17,6 +19,9 @@ const SCOPE_COLORS: Record<string, string> = {
 
 export default async function NotesPage() {
   const user = await requireSession();
+
+  const plan = user.plan ?? "FREE";
+  const limits = await getPlanLimits(plan);
 
   const notes = await db.note.findMany({
     where: { userId: user.id },
@@ -63,6 +68,8 @@ export default async function NotesPage() {
           </p>
         </div>
       </div>
+
+      <UsageIndicator label="notes" current={notes.length} limit={limits.maxNotes} />
 
       {notes.length === 0 && (
         <div className="py-20 text-center">

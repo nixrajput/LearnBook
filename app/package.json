@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "prisma studio --port 5555 &>/dev/null & next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint src",
@@ -35,6 +35,7 @@
     "@radix-ui/react-tabs": "^1.1.12",
     "@radix-ui/react-toast": "^1.2.14",
     "@radix-ui/react-tooltip": "^1.2.7",
+    "@stripe/stripe-js": "^8.11.0",
     "@tailwindcss/typography": "^0.5.19",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -53,6 +54,7 @@
     "rehype-slug": "^6.0.0",
     "remark-gfm": "^4.0.1",
     "shiki": "^1.29.2",
+    "stripe": "^20.4.1",
     "tailwind-merge": "^2.6.0",
     "zod": "^3.24.4",
     "zustand": "^5.0.3"

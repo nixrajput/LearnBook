@@ -4,11 +4,16 @@ import { db } from "@/lib/db";
 import { formatDate } from "@/lib/utils/date";
 import { Bookmark, ArrowRight } from "lucide-react";
 import { requireSession } from "@/lib/auth/session";
+import { getPlanLimits } from "@/lib/plans";
+import { UsageIndicator } from "@/components/plan/usage-indicator";
 
 export const metadata: Metadata = { title: "Bookmarks" };
 
 export default async function BookmarksPage() {
   const user = await requireSession();
+
+  const plan = user.plan ?? "FREE";
+  const limits = await getPlanLimits(plan);
 
   const bookmarks = await db.bookmark.findMany({
     where: { userId: user.id },
@@ -42,6 +47,8 @@ export default async function BookmarksPage() {
           {courseGroups.length !== 1 ? "s" : ""}
         </p>
       </div>
+
+      <UsageIndicator label="bookmarks" current={bookmarks.length} limit={limits.maxBookmarks} />
 
       {bookmarks.length === 0 && (
         <div className="py-20 text-center">

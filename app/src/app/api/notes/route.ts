@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { createNoteSchema } from "@/lib/validators/note";
 import { requireApiSession } from "@/lib/auth/session";
 import { getActiveCourseId } from "@/lib/content/parser";
+import { checkPlanLimit } from "@/lib/api-guard";
 
 export async function GET(req: NextRequest) {
   const user = await requireApiSession();
@@ -38,6 +39,10 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
+
+  // Check plan limit before creating
+  const limitError = await checkPlanLimit(user.id, user.plan ?? "FREE", "notes");
+  if (limitError) return limitError;
 
   try {
     const note = await db.note.create({ data: { ...parsed.data, userId: user.id } });

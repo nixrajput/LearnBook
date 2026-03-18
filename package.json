@@ -14,8 +14,11 @@
     "lint:fix": "npm run lint:fix --workspace=app",
     "format": "npm run format --workspace=app",
     "format:check": "npm run format:check --workspace=app",
+    "db:generate": "npm run db:generate --workspace=app",
+    "db:push": "npm run db:push --workspace=app",
     "db:seed": "npm run db:seed --workspace=app",
-    "db:reset": "npm run db:reset --workspace=app"
+    "db:reset": "npm run db:reset --workspace=app",
+    "db:studio": "npm run db:studio --workspace=app"
   },
   "devDependencies": {
     "husky": "^9.1.7",

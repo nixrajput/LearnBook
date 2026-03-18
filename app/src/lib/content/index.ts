@@ -144,6 +144,163 @@ export async function getAllChapterSlugs(): Promise<string[]> {
   return chapters.map((c) => c.slug);
 }
 
+// ─── Advanced Analytics Functions ─────────────────────────────────────────────
+
+export interface ReadingSpeedStats {
+  sessions: { date: string; wpm: number }[];
+  avgWpm: number;
+  trend: number | null; // positive = improving
+}
+
+export async function getReadingSpeedStats(userId: string): Promise<ReadingSpeedStats> {
+  const sessions = await db.readingSession.findMany({
+    where: { userId, endedAt: { not: null }, durationSec: { gt: 0 }, wordsRead: { gt: 0 } },
+    orderBy: { startedAt: "asc" },
+    take: 50,
+    select: { startedAt: true, wordsRead: true, durationSec: true },
+  });
+
+  const data = sessions.map((s) => ({
+    date: s.startedAt.toISOString().split("T")[0],
+    wpm: Math.round((s.wordsRead / s.durationSec) * 60),
+  }));
+
+  const totalWpm = data.reduce((sum, d) => sum + d.wpm, 0);
+  const avgWpm = data.length > 0 ? Math.round(totalWpm / data.length) : 0;
+
+  // Trend: compare last 5 vs previous 5
+  let trend: number | null = null;
+  if (data.length >= 10) {
+    const recent = data.slice(-5).reduce((s, d) => s + d.wpm, 0) / 5;
+    const prior = data.slice(-10, -5).reduce((s, d) => s + d.wpm, 0) / 5;
+    trend = Math.round(recent - prior);
+  }
+
+  return { sessions: data, avgWpm, trend };
+}
+
+export interface FocusInsights {
+  peakHour: number | null; // 0-23
+  peakHourLabel: string;
+  avgSessionMin: number;
+  totalSessions: number;
+  hourDistribution: number[]; // 24 buckets
+}
+
+export async function getFocusInsights(userId: string): Promise<FocusInsights> {
+  const sessions = await db.readingSession.findMany({
+    where: { userId, endedAt: { not: null }, durationSec: { gt: 30 } },
+    select: { startedAt: true, durationSec: true },
+  });
+
+  const hourBuckets = new Array(24).fill(0) as number[];
+  let totalDuration = 0;
+
+  for (const s of sessions) {
+    const hour = s.startedAt.getHours();
+    hourBuckets[hour] += s.durationSec;
+    totalDuration += s.durationSec;
+  }
+
+  const peakHour = sessions.length > 0 ? hourBuckets.indexOf(Math.max(...hourBuckets)) : null;
+  const HOUR_LABELS = [
+    "12 AM",
+    "1 AM",
+    "2 AM",
+    "3 AM",
+    "4 AM",
+    "5 AM",
+    "6 AM",
+    "7 AM",
+    "8 AM",
+    "9 AM",
+    "10 AM",
+    "11 AM",
+    "12 PM",
+    "1 PM",
+    "2 PM",
+    "3 PM",
+    "4 PM",
+    "5 PM",
+    "6 PM",
+    "7 PM",
+    "8 PM",
+    "9 PM",
+    "10 PM",
+    "11 PM",
+  ];
+
+  return {
+    peakHour,
+    peakHourLabel: peakHour !== null ? HOUR_LABELS[peakHour] : "—",
+    avgSessionMin: sessions.length > 0 ? Math.round(totalDuration / sessions.length / 60) : 0,
+    totalSessions: sessions.length,
+    hourDistribution: hourBuckets,
+  };
+}
+
+export interface CompletionForecast {
+  estimatedDaysLeft: number | null;
+  estimatedDate: string | null;
+  avgChaptersPerWeek: number;
+  remainingChapters: number;
+}
+
+export async function getCompletionForecast(
+  userId: string,
+  courseId: string,
+): Promise<CompletionForecast> {
+  const [totalChapters, completedCount, recentCompletions] = await Promise.all([
+    db.chapter.count({ where: { courseId } }),
+    db.readingProgress.count({ where: { userId, courseId, completed: true } }),
+    db.readingProgress.findMany({
+      where: { userId, courseId, completed: true, completedAt: { not: null } },
+      orderBy: { completedAt: "desc" },
+      take: 20,
+      select: { completedAt: true },
+    }),
+  ]);
+
+  const remaining = totalChapters - completedCount;
+  if (remaining <= 0) {
+    return {
+      estimatedDaysLeft: 0,
+      estimatedDate: null,
+      avgChaptersPerWeek: 0,
+      remainingChapters: 0,
+    };
+  }
+
+  // Calculate average chapters per week from recent completions
+  if (recentCompletions.length < 2) {
+    return {
+      estimatedDaysLeft: null,
+      estimatedDate: null,
+      avgChaptersPerWeek: 0,
+      remainingChapters: remaining,
+    };
+  }
+
+  const oldest = recentCompletions[recentCompletions.length - 1].completedAt!;
+  const newest = recentCompletions[0].completedAt!;
+  const daySpan = Math.max(1, (newest.getTime() - oldest.getTime()) / 86400000);
+  const avgPerDay = (recentCompletions.length - 1) / daySpan;
+  const avgPerWeek = Math.round(avgPerDay * 7 * 10) / 10;
+
+  const daysLeft = avgPerDay > 0 ? Math.ceil(remaining / avgPerDay) : null;
+  const estimatedDate =
+    daysLeft !== null
+      ? new Date(Date.now() + daysLeft * 86400000).toISOString().split("T")[0]
+      : null;
+
+  return {
+    estimatedDaysLeft: daysLeft,
+    estimatedDate,
+    avgChaptersPerWeek: avgPerWeek,
+    remainingChapters: remaining,
+  };
+}
+
 export async function getAdjacentChapters(chapterSlug: string, userId?: string) {
   const courseId = await getActiveCourseId(userId);
   const current = await db.chapter.findUnique({
