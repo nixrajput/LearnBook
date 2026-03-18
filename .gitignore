@@ -36,3 +36,4 @@ coverage/
 reader/coverage/
 
 .playwright-mcp/
+plans/
