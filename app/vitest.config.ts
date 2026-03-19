@@ -8,6 +8,7 @@ export default defineConfig({
     environment: "node",
     globals: true,
     root: __dirname,
+    setupFiles: ["./src/__tests__/setup-dom.ts"],
   },
   resolve: {
     alias: {
