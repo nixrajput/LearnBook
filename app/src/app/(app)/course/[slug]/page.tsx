@@ -14,6 +14,9 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, CheckCircle2 } from "lucide-react";
 import { requireSession } from "@/lib/auth/session";
 import { auth } from "@/auth";
+import { AiExplainPopover } from "@/components/ai/ai-explain-popover";
+import { AiSummaryPanel } from "@/components/ai/ai-summary-panel";
+import { AiChat } from "@/components/ai/ai-chat";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -111,9 +114,18 @@ export default async function ChapterPage({ params }: PageProps) {
             fontFamily={prefs?.fontFamily ?? "sans"}
           />
 
+          {/* AI tools */}
+          <div className="my-8 flex flex-wrap gap-2">
+            <AiSummaryPanel chapterId={chapter.id} chapterTitle={chapter.title} />
+            <AiChat chapterId={chapter.id} chapterTitle={chapter.title} />
+          </div>
+
           {/* Chapter navigation */}
           <ChapterNav prev={chapter.prevChapter} next={chapter.nextChapter} />
         </article>
+
+        {/* AI text selection popover */}
+        <AiExplainPopover chapterId={chapter.id} />
       </ReaderLayout>
     </>
   );

@@ -5,6 +5,7 @@ import { LocaleForm } from "@/components/settings/locale-form";
 import { ExportImport } from "@/components/settings/export-import";
 import { Separator } from "@/components/ui/separator";
 import { requireSession } from "@/lib/auth/session";
+import { ModelSelector } from "@/components/ai/model-selector";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -49,6 +50,16 @@ export default async function SettingsPage() {
           initialLocale={dbUser?.locale ?? "en-US"}
           initialLanguage={dbUser?.primaryLanguage ?? "en"}
         />
+      </section>
+
+      <Separator className="my-8" />
+
+      <section className="mb-8">
+        <h2 className="mb-1 text-lg font-semibold">AI Preferences</h2>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Choose your preferred AI model. Higher-tier models use more credits per action.
+        </p>
+        <ModelSelector />
       </section>
 
       <Separator className="my-8" />

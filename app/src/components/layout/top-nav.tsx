@@ -10,6 +10,7 @@ import { useSearchStore } from "@/stores/search-store";
 import { navItems } from "@/config/navigation";
 import { cn } from "@/lib/utils/cn";
 import { UserMenu } from "@/components/auth/user-menu";
+import { CreditsBadge } from "@/components/ai/credits-badge";
 
 interface TopNavProps {
   onMenuClick: () => void;
@@ -106,6 +107,7 @@ export function TopNav({ onMenuClick, user }: TopNavProps) {
         </Button>
 
         {/* User menu */}
+        {user && <CreditsBadge />}
         {user && <UserMenu user={user} />}
 
         {/* Theme toggle — last in nav */}
