@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { formatPrice } from "@/lib/plans";
 import { Users, BookOpen, StickyNote, CreditCard, TrendingUp, BarChart3 } from "lucide-react";
 
 export default async function AdminAnalyticsPage() {
@@ -91,7 +92,7 @@ export default async function AdminAnalyticsPage() {
   });
 
   const freeUsers = totalUsers - proUsers - premiumUsers;
-  const mrr = proUsers * 799 + premiumUsers * 1499; // cents
+  const mrr = proUsers * 499 + premiumUsers * 999;
 
   const stats = [
     {
@@ -124,7 +125,7 @@ export default async function AdminAnalyticsPage() {
     },
     {
       label: "MRR",
-      value: `$${(mrr / 100).toFixed(2)}`,
+      value: formatPrice(mrr),
       icon: CreditCard,
       color: "text-amber-500",
       bg: "bg-amber-500/10",

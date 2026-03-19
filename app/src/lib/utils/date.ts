@@ -1,8 +1,12 @@
 import { format, formatDistanceToNow, parseISO } from "date-fns";
 
-export function formatDate(date: Date | string): string {
+export function formatDate(date: Date | string, locale: string = "en-US"): string {
   const d = typeof date === "string" ? parseISO(date) : date;
-  return format(d, "MMM d, yyyy");
+  return new Intl.DateTimeFormat(locale, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(d);
 }
 
 export function formatRelative(date: Date | string): string {

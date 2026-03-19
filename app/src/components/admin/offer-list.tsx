@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 
 interface OfferRow {
   id: string;
@@ -26,6 +27,7 @@ export function AdminOfferList({ offers }: { offers: OfferRow[] }) {
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<OfferRow | null>(null);
 
   async function toggleActive(id: string, isActive: boolean) {
     setLoading(id);
@@ -43,16 +45,17 @@ export function AdminOfferList({ offers }: { offers: OfferRow[] }) {
     }
   }
 
-  async function deleteOffer(id: string) {
-    if (!confirm("Delete this offer?")) return;
-    setLoading(id);
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) return;
+    setLoading(deleteTarget.id);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/offers/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/offers/${deleteTarget.id}`, { method: "DELETE" });
       if (res.ok) router.refresh();
       else setError((await res.json().catch(() => ({}))).error ?? "Failed");
     } finally {
       setLoading(null);
+      setDeleteTarget(null);
     }
   }
 
@@ -137,7 +140,7 @@ export function AdminOfferList({ offers }: { offers: OfferRow[] }) {
                     variant="ghost"
                     size="sm"
                     className="text-destructive hover:text-destructive"
-                    onClick={() => deleteOffer(o.id)}
+                    onClick={() => setDeleteTarget(o)}
                     disabled={loading === o.id}
                   >
                     {loading === o.id ? (
@@ -152,6 +155,16 @@ export function AdminOfferList({ offers }: { offers: OfferRow[] }) {
           })}
         </div>
       )}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Delete Offer"
+        description={`Are you sure you want to delete offer "${deleteTarget?.code}"? This action cannot be undone.`}
+        confirmLabel="Delete Offer"
+        variant="danger"
+        onConfirm={handleDeleteConfirm}
+        loading={loading === deleteTarget?.id}
+      />
     </div>
   );
 }

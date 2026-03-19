@@ -141,8 +141,8 @@ export async function seedPlanConfigs(db: PrismaClient): Promise<void> {
     {
       planKey: "PRO",
       name: "Pro",
-      priceMonthly: 799,
-      priceYearly: 7990,
+      priceMonthly: 499,
+      priceYearly: 4999,
       features: JSON.stringify([
         "Unlimited courses",
         "Unlimited notes",
@@ -162,8 +162,8 @@ export async function seedPlanConfigs(db: PrismaClient): Promise<void> {
     {
       planKey: "PREMIUM",
       name: "Premium",
-      priceMonthly: 1499,
-      priceYearly: 14990,
+      priceMonthly: 999,
+      priceYearly: 9999,
       features: JSON.stringify([
         "Everything in Pro",
         "Exclusive courses",

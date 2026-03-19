@@ -10,6 +10,7 @@ import { formatPrice } from "@/lib/plans";
 interface PricingPageClientProps {
   plans: PlanInfo[];
   currentPlan?: string;
+  locale?: string;
 }
 
 const COMPARISON_ROWS = [
@@ -33,7 +34,11 @@ function getComparisonValue(features: string, rowIndex: number): string | boolea
   }
 }
 
-export function PricingPageClient({ plans, currentPlan }: PricingPageClientProps) {
+export function PricingPageClient({
+  plans,
+  currentPlan,
+  locale = "en-US",
+}: PricingPageClientProps) {
   const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
   const [offerCode, setOfferCode] = useState<string | undefined>();
   const [discountPercent, setDiscountPercent] = useState<number | undefined>();
@@ -87,6 +92,7 @@ export function PricingPageClient({ plans, currentPlan }: PricingPageClientProps
               billingInterval={billingInterval}
               offerCode={offerCode}
               discountPercent={plan.planKey !== "FREE" ? discountPercent : undefined}
+              locale={locale}
             />
           </div>
         ))}
@@ -132,7 +138,10 @@ export function PricingPageClient({ plans, currentPlan }: PricingPageClientProps
                   >
                     {p.name}
                     <div className="mt-0.5 text-xs font-normal text-muted-foreground">
-                      {formatPrice(billingInterval === "yearly" ? p.priceYearly : p.priceMonthly)}
+                      {formatPrice(
+                        billingInterval === "yearly" ? p.priceYearly : p.priceMonthly,
+                        locale,
+                      )}
                       {p.priceMonthly > 0 && (billingInterval === "yearly" ? "/yr" : "/mo")}
                     </div>
                   </th>

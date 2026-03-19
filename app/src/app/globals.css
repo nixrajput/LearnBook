@@ -73,11 +73,11 @@ html {
 
 /* Prose customizations */
 .prose pre {
-  @apply rounded-lg border;
+  @apply rounded-lg border bg-zinc-100 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200;
 }
 
 .prose pre code {
-  @apply bg-transparent p-0 text-current;
+  @apply bg-transparent p-0 text-inherit;
 }
 
 /* Highlight colors */

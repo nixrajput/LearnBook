@@ -56,7 +56,7 @@ export function FocusInsights({ insights }: FocusInsightsProps) {
             return (
               <div
                 key={hour}
-                className={`flex-1 rounded-t transition-all ${isPeak ? "bg-violet-500" : "bg-violet-500/30"}`}
+                className={`flex-1 rounded-t transition-all ${isPeak ? "bg-violet-600 dark:bg-violet-400" : "bg-violet-300 dark:bg-violet-700"}`}
                 style={{ height: `${heightPct}%` }}
                 title={`${hour}:00 — ${Math.round(secs / 60)}min`}
               />

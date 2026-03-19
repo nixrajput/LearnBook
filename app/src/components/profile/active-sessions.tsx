@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Monitor, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 
 interface SessionEntry {
   id: string;
@@ -15,6 +16,8 @@ export function ActiveSessions() {
   const [sessions, setSessions] = useState<SessionEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [revoking, setRevoking] = useState<string | null>(null);
+  const [confirmRevokeAll, setConfirmRevokeAll] = useState(false);
+  const [confirmRevokeId, setConfirmRevokeId] = useState<string | null>(null);
 
   async function fetchSessions() {
     try {
@@ -30,23 +33,25 @@ export function ActiveSessions() {
     fetchSessions();
   }, []);
 
-  async function revokeSession(sessionId: string) {
-    setRevoking(sessionId);
+  async function handleRevokeSession() {
+    if (!confirmRevokeId) return;
+    setRevoking(confirmRevokeId);
     try {
       const res = await fetch("/api/sessions", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId }),
+        body: JSON.stringify({ sessionId: confirmRevokeId }),
       });
       if (res.ok) {
-        setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+        setSessions((prev) => prev.filter((s) => s.id !== confirmRevokeId));
       }
     } finally {
       setRevoking(null);
+      setConfirmRevokeId(null);
     }
   }
 
-  async function revokeAll() {
+  async function handleRevokeAll() {
     setRevoking("all");
     try {
       await fetch("/api/sessions", {
@@ -54,10 +59,10 @@ export function ActiveSessions() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ all: true }),
       });
-      // Keep only the current session in the list
       setSessions((prev) => prev.filter((s) => s.isCurrent));
     } finally {
       setRevoking(null);
+      setConfirmRevokeAll(false);
     }
   }
 
@@ -82,7 +87,7 @@ export function ActiveSessions() {
             variant="outline"
             size="sm"
             className="text-destructive hover:text-destructive"
-            onClick={revokeAll}
+            onClick={() => setConfirmRevokeAll(true)}
             disabled={revoking !== null}
           >
             {revoking === "all" ? (
@@ -131,7 +136,7 @@ export function ActiveSessions() {
                     variant="ghost"
                     size="sm"
                     className="text-destructive hover:text-destructive"
-                    onClick={() => revokeSession(session.id)}
+                    onClick={() => setConfirmRevokeId(session.id)}
                     disabled={revoking !== null}
                   >
                     {revoking === session.id ? (
@@ -146,6 +151,28 @@ export function ActiveSessions() {
           })}
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmRevokeAll}
+        onOpenChange={setConfirmRevokeAll}
+        title="Revoke All Other Sessions"
+        description="This will sign you out from all other devices. You will remain signed in on this device only."
+        confirmLabel="Revoke All"
+        variant="warning"
+        onConfirm={handleRevokeAll}
+        loading={revoking === "all"}
+      />
+
+      <ConfirmDialog
+        open={!!confirmRevokeId}
+        onOpenChange={(open) => !open && setConfirmRevokeId(null)}
+        title="Revoke Session"
+        description="This will sign out the device using this session. They will need to sign in again."
+        confirmLabel="Revoke"
+        variant="warning"
+        onConfirm={handleRevokeSession}
+        loading={revoking === confirmRevokeId}
+      />
     </div>
   );
 }

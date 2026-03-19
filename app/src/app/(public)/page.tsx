@@ -241,10 +241,10 @@ export default async function LandingPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <div className="h-3 w-full rounded bg-muted/60" />
-                  <div className="h-3 w-11/12 rounded bg-muted/60" />
-                  <div className="h-3 w-10/12 rounded bg-muted/60" />
-                  <div className="h-3 w-full rounded bg-muted/60" />
+                  <div className="h-3 w-full rounded bg-zinc-200 dark:bg-zinc-700" />
+                  <div className="h-3 w-11/12 rounded bg-zinc-200 dark:bg-zinc-700" />
+                  <div className="h-3 w-10/12 rounded bg-zinc-200 dark:bg-zinc-700" />
+                  <div className="h-3 w-full rounded bg-zinc-200 dark:bg-zinc-700" />
                   <div className="my-3 rounded-lg border-l-2 border-primary/40 bg-primary/5 p-3">
                     <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-primary">
                       <StickyNote className="h-3 w-3" />
@@ -252,8 +252,8 @@ export default async function LandingPage() {
                     </div>
                     <div className="h-2.5 w-3/4 rounded bg-primary/20" />
                   </div>
-                  <div className="h-3 w-full rounded bg-muted/60" />
-                  <div className="h-3 w-9/12 rounded bg-muted/60" />
+                  <div className="h-3 w-full rounded bg-zinc-200 dark:bg-zinc-700" />
+                  <div className="h-3 w-9/12 rounded bg-zinc-200 dark:bg-zinc-700" />
                 </div>
               </div>
             </div>

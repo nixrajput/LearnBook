@@ -22,6 +22,8 @@ model User {
   planExpiresAt        DateTime? @map("plan_expires_at")
   stripeCustomerId     String?   @unique @map("stripe_customer_id")
   stripeSubscriptionId String?   @map("stripe_subscription_id")
+  locale               String?
+  primaryLanguage      String?   @map("primary_language")
   createdAt            DateTime  @default(now()) @map("created_at")
   updatedAt            DateTime  @updatedAt @map("updated_at")
 

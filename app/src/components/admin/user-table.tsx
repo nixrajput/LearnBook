@@ -6,6 +6,7 @@ import { Loader2, Trash2, Shield, ShieldOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 
 interface UserRow {
   id: string;
@@ -29,6 +30,7 @@ export function AdminUserTable({ users }: { users: UserRow[] }) {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<UserRow | null>(null);
 
   async function toggleRole(id: string, currentRole: string) {
     setLoading(id);
@@ -50,12 +52,12 @@ export function AdminUserTable({ users }: { users: UserRow[] }) {
     }
   }
 
-  async function deleteUser(id: string, email: string) {
-    if (!confirm(`Delete user "${email}"? This permanently removes all their data.`)) return;
-    setLoading(id);
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) return;
+    setLoading(deleteTarget.id);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/users/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/users/${deleteTarget.id}`, { method: "DELETE" });
       if (res.ok) {
         router.refresh();
       } else {
@@ -64,6 +66,7 @@ export function AdminUserTable({ users }: { users: UserRow[] }) {
       }
     } finally {
       setLoading(null);
+      setDeleteTarget(null);
     }
   }
 
@@ -157,7 +160,7 @@ export function AdminUserTable({ users }: { users: UserRow[] }) {
                       variant="ghost"
                       size="sm"
                       className="text-destructive hover:text-destructive"
-                      onClick={() => deleteUser(u.id, u.email)}
+                      onClick={() => setDeleteTarget(u)}
                       disabled={loading === u.id}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -169,6 +172,17 @@ export function AdminUserTable({ users }: { users: UserRow[] }) {
           </tbody>
         </table>
       </div>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Delete User"
+        description={`Are you sure you want to delete "${deleteTarget?.email}"? This permanently removes their account, notes, bookmarks, progress, and all associated data. This action cannot be undone.`}
+        confirmLabel="Delete User"
+        variant="danger"
+        onConfirm={handleDeleteConfirm}
+        loading={loading === deleteTarget?.id}
+      />
     </div>
   );
 }

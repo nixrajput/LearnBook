@@ -84,7 +84,7 @@ export function getMDXComponents(): MDXComponents {
     pre: ({ className, children, ...props }) => (
       <pre
         className={cn(
-          "my-4 overflow-x-auto rounded-lg border bg-muted p-4 font-mono text-sm leading-relaxed",
+          "my-4 overflow-x-auto rounded-lg border bg-zinc-100 p-4 font-mono text-sm leading-relaxed text-zinc-800 dark:bg-zinc-900 dark:text-zinc-200",
           className,
         )}
         {...props}
@@ -109,6 +109,15 @@ export function getMDXComponents(): MDXComponents {
     ),
     strong: ({ className, ...props }) => (
       <strong className={cn("font-semibold", className)} {...props} />
+    ),
+    img: ({ className, alt, ...props }) => (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        className={cn("my-4 rounded-lg border bg-white p-2 dark:bg-zinc-900", className)}
+        alt={alt ?? ""}
+        loading="lazy"
+        {...props}
+      />
     ),
   };
 }

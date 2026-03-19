@@ -318,13 +318,13 @@ export default async function HomePage() {
           <div className="mb-6 rounded-lg bg-muted/40 p-4">
             <div className="mb-3 flex items-center justify-between">
               <span className="text-sm font-medium">Overall completion</span>
-              <span className="text-2xl font-bold tabular-nums text-primary">
+              <span className="text-2xl font-bold tabular-nums text-indigo-600 dark:text-indigo-400">
                 {data.completionPct}%
               </span>
             </div>
             <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-secondary">
               <div
-                className="absolute inset-y-0 left-0 rounded-full bg-primary transition-all duration-700"
+                className="absolute inset-y-0 left-0 rounded-full bg-indigo-600 transition-all duration-700 dark:bg-indigo-400"
                 style={{ width: `${data.completionPct}%` }}
               />
             </div>
@@ -358,7 +358,7 @@ export default async function HomePage() {
                     <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-secondary">
                       <div
                         className={`absolute inset-y-0 left-0 rounded-full transition-all duration-500 ${
-                          pct === 100 ? "bg-emerald-500" : "bg-primary/60"
+                          pct === 100 ? "bg-emerald-500" : "bg-indigo-500 dark:bg-indigo-400"
                         }`}
                         style={{ width: `${pct}%` }}
                       />
@@ -463,12 +463,12 @@ export default async function HomePage() {
                 title={`${date}${mins > 0 ? ` · ${mins} min` : ""}`}
                 className={`h-8 rounded transition-colors ${
                   level === 0
-                    ? "bg-muted/60"
+                    ? "bg-secondary"
                     : level === 1
-                      ? "bg-primary/25"
+                      ? "bg-indigo-200 dark:bg-indigo-900"
                       : level === 2
-                        ? "bg-primary/55"
-                        : "bg-primary"
+                        ? "bg-indigo-400 dark:bg-indigo-600"
+                        : "bg-indigo-600 dark:bg-indigo-400"
                 }`}
               />
             ))}
@@ -477,7 +477,12 @@ export default async function HomePage() {
           {/* Legend */}
           <div className="mt-3 flex items-center justify-end gap-1.5 text-[10px] text-muted-foreground">
             <span>Less</span>
-            {["bg-muted/60", "bg-primary/25", "bg-primary/55", "bg-primary"].map((cls, i) => (
+            {[
+              "bg-secondary",
+              "bg-indigo-200 dark:bg-indigo-900",
+              "bg-indigo-400 dark:bg-indigo-600",
+              "bg-indigo-600 dark:bg-indigo-400",
+            ].map((cls, i) => (
               <div key={i} className={`h-3 w-3 rounded-sm ${cls}`} />
             ))}
             <span>More</span>
@@ -500,14 +505,16 @@ export default async function HomePage() {
                       <div className="flex w-full flex-1 items-end">
                         <div
                           className={`w-full rounded-t transition-all duration-500 ${
-                            isMax ? "bg-primary" : "bg-primary/40"
+                            isMax
+                              ? "bg-indigo-600 dark:bg-indigo-400"
+                              : "bg-indigo-300 dark:bg-indigo-700"
                           }`}
                           style={{ height: `${heightPct}%` }}
                           title={`${mins} min`}
                         />
                       </div>
                       <span
-                        className={`text-[10px] ${isMax ? "font-semibold text-primary" : "text-muted-foreground"}`}
+                        className={`text-[10px] ${isMax ? "font-semibold text-indigo-600 dark:text-indigo-400" : "text-muted-foreground"}`}
                       >
                         {dayLabel}
                       </span>

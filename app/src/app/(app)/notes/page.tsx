@@ -145,7 +145,7 @@ export default async function NotesPage() {
                               {note.content}
                             </p>
                             <p className="mt-2 text-xs text-muted-foreground">
-                              {formatDate(note.updatedAt)}
+                              {formatDate(note.updatedAt, user.locale ?? "en-US")}
                             </p>
                           </div>
                         );

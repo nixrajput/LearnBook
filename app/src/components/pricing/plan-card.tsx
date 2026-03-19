@@ -16,6 +16,7 @@ interface PlanCardProps {
   billingInterval: "monthly" | "yearly";
   offerCode?: string;
   discountPercent?: number;
+  locale?: string;
 }
 
 export function PlanCard({
@@ -29,6 +30,7 @@ export function PlanCard({
   billingInterval,
   offerCode,
   discountPercent,
+  locale = "en-US",
 }: PlanCardProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -91,12 +93,14 @@ export function PlanCard({
         {discountPercent && !isFree ? (
           <>
             <span className="text-2xl text-muted-foreground line-through">
-              {formatPrice(price)}
+              {formatPrice(price, locale)}
             </span>
-            <span className="text-4xl font-bold text-primary">{formatPrice(displayPrice)}</span>
+            <span className="text-4xl font-bold text-primary">
+              {formatPrice(displayPrice, locale)}
+            </span>
           </>
         ) : (
-          <span className="text-4xl font-bold text-primary">{formatPrice(price)}</span>
+          <span className="text-4xl font-bold text-primary">{formatPrice(price, locale)}</span>
         )}
       </div>
 
@@ -104,7 +108,7 @@ export function PlanCard({
         {isFree
           ? "Forever free"
           : billingInterval === "yearly"
-            ? `${formatPrice(monthlyEquivalent)}/mo, billed yearly`
+            ? `${formatPrice(monthlyEquivalent, locale)}/mo, billed yearly`
             : "per month"}
       </p>
 

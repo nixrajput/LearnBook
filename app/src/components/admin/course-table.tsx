@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, Trash2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 
 interface CourseRow {
   id: string;
@@ -19,8 +20,8 @@ interface CourseRow {
 export function AdminCourseTable({ courses }: { courses: CourseRow[] }) {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
-
   const [error, setError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<CourseRow | null>(null);
 
   async function togglePublish(id: string, isPublished: boolean) {
     setLoading(id);
@@ -42,16 +43,12 @@ export function AdminCourseTable({ courses }: { courses: CourseRow[] }) {
     }
   }
 
-  async function deleteCourse(id: string, title: string) {
-    if (
-      !confirm(`Delete "${title}"? This removes all content, notes, and progress for this course.`)
-    ) {
-      return;
-    }
-    setLoading(id);
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) return;
+    setLoading(deleteTarget.id);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/courses/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/admin/courses/${deleteTarget.id}`, { method: "DELETE" });
       if (res.ok) {
         router.refresh();
       } else {
@@ -60,6 +57,7 @@ export function AdminCourseTable({ courses }: { courses: CourseRow[] }) {
       }
     } finally {
       setLoading(null);
+      setDeleteTarget(null);
     }
   }
 
@@ -72,76 +70,95 @@ export function AdminCourseTable({ courses }: { courses: CourseRow[] }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border bg-card">
-      {error && (
-        <div className="border-b bg-destructive/5 px-4 py-2 text-xs text-destructive">{error}</div>
-      )}
-      <table className="w-full">
-        <thead>
-          <tr className="border-b bg-muted/40">
-            <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Title</th>
-            <th className="px-4 py-3 text-center text-sm font-medium text-muted-foreground">
-              Parts
-            </th>
-            <th className="px-4 py-3 text-center text-sm font-medium text-muted-foreground">
-              Chapters
-            </th>
-            <th className="px-4 py-3 text-center text-sm font-medium text-muted-foreground">
-              Status
-            </th>
-            <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {courses.map((course) => (
-            <tr
-              key={course.id}
-              className="border-b transition-colors last:border-0 hover:bg-muted/20"
-            >
-              <td className="px-4 py-3">
-                <div className="text-sm font-medium">{course.title}</div>
-                <div className="font-mono text-xs text-muted-foreground">{course.collectionId}</div>
-              </td>
-              <td className="px-4 py-3 text-center text-sm">{course.totalParts}</td>
-              <td className="px-4 py-3 text-center text-sm">{course.totalChapters}</td>
-              <td className="px-4 py-3 text-center">
-                <Badge variant={course.isPublished ? "default" : "secondary"}>
-                  {course.isPublished ? "Published" : "Draft"}
-                </Badge>
-              </td>
-              <td className="px-4 py-3">
-                <div className="flex items-center justify-end gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => togglePublish(course.id, course.isPublished)}
-                    disabled={loading === course.id}
-                  >
-                    {loading === course.id ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : course.isPublished ? (
-                      <EyeOff className="h-3.5 w-3.5" />
-                    ) : (
-                      <Eye className="h-3.5 w-3.5" />
-                    )}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-destructive hover:text-destructive"
-                    onClick={() => deleteCourse(course.id, course.title)}
-                    disabled={loading === course.id}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              </td>
+    <>
+      <div className="overflow-hidden rounded-xl border bg-card">
+        {error && (
+          <div className="border-b bg-destructive/5 px-4 py-2 text-xs text-destructive">
+            {error}
+          </div>
+        )}
+        <table className="w-full">
+          <thead>
+            <tr className="border-b bg-muted/40">
+              <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                Title
+              </th>
+              <th className="px-4 py-3 text-center text-sm font-medium text-muted-foreground">
+                Parts
+              </th>
+              <th className="px-4 py-3 text-center text-sm font-medium text-muted-foreground">
+                Chapters
+              </th>
+              <th className="px-4 py-3 text-center text-sm font-medium text-muted-foreground">
+                Status
+              </th>
+              <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
+                Actions
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {courses.map((course) => (
+              <tr
+                key={course.id}
+                className="border-b transition-colors last:border-0 hover:bg-muted/20"
+              >
+                <td className="px-4 py-3">
+                  <div className="text-sm font-medium">{course.title}</div>
+                  <div className="font-mono text-xs text-muted-foreground">
+                    {course.collectionId}
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-center text-sm">{course.totalParts}</td>
+                <td className="px-4 py-3 text-center text-sm">{course.totalChapters}</td>
+                <td className="px-4 py-3 text-center">
+                  <Badge variant={course.isPublished ? "default" : "secondary"}>
+                    {course.isPublished ? "Published" : "Draft"}
+                  </Badge>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center justify-end gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => togglePublish(course.id, course.isPublished)}
+                      disabled={loading === course.id}
+                    >
+                      {loading === course.id ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : course.isPublished ? (
+                        <EyeOff className="h-3.5 w-3.5" />
+                      ) : (
+                        <Eye className="h-3.5 w-3.5" />
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => setDeleteTarget(course)}
+                      disabled={loading === course.id}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Delete Course"
+        description={`Are you sure you want to delete "${deleteTarget?.title}"? This permanently removes all content, chapters, notes, bookmarks, and reading progress for this course. This action cannot be undone.`}
+        confirmLabel="Delete Course"
+        variant="danger"
+        onConfirm={handleDeleteConfirm}
+        loading={loading === deleteTarget?.id}
+      />
+    </>
   );
 }

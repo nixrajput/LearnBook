@@ -102,7 +102,7 @@ export default async function BookmarksPage() {
                       </div>
                     )}
                     <div className="mt-1 text-xs text-muted-foreground">
-                      {formatDate(bookmark.createdAt)}
+                      {formatDate(bookmark.createdAt, user.locale ?? "en-US")}
                     </div>
                   </div>
                   <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />

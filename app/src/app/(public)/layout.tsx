@@ -4,7 +4,6 @@ import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { AppShell } from "@/components/layout/app-shell";
-import { SearchDialog } from "@/components/search/search-dialog";
 import { SiteFooter } from "@/components/layout/site-footer";
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
@@ -12,15 +11,7 @@ export default async function PublicLayout({ children }: { children: React.React
   const isLoggedIn = !!session?.user;
 
   if (isLoggedIn) {
-    return (
-      <>
-        <AppShell user={session.user}>
-          {children}
-          <SiteFooter />
-        </AppShell>
-        <SearchDialog />
-      </>
-    );
+    return <AppShell user={session.user}>{children}</AppShell>;
   }
 
   return (

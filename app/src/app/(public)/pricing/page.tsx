@@ -31,7 +31,11 @@ export default async function PricingPage() {
       </div>
 
       {/* Client component handles billing toggle, offers, and plan cards */}
-      <PricingPageClient plans={plans} currentPlan={session?.user?.plan} />
+      <PricingPageClient
+        plans={plans}
+        currentPlan={session?.user?.plan}
+        locale={session?.user?.locale ?? "en-US"}
+      />
 
       {/* CTA */}
       <div className="mt-16 animate-slide-up text-center">

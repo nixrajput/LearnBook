@@ -36,6 +36,7 @@ export default async function ProfilePage() {
       plan: true,
       planExpiresAt: true,
       stripeCustomerId: true,
+      locale: true,
       createdAt: true,
     },
   });
@@ -87,7 +88,7 @@ export default async function ProfilePage() {
             </div>
             <p className="text-sm text-muted-foreground">{user.email}</p>
             <p className="text-xs text-muted-foreground">
-              Member since {new Date(user.createdAt).toLocaleDateString()}
+              Member since {new Date(user.createdAt).toLocaleDateString(user.locale ?? "en-US")}
             </p>
           </div>
         </div>
@@ -133,9 +134,9 @@ export default async function ProfilePage() {
                 <p className="text-xs text-muted-foreground">
                   {plan === "FREE"
                     ? "Free forever"
-                    : `${formatPrice(currentPlanInfo?.priceMonthly ?? 0)}/month`}
+                    : `${formatPrice(currentPlanInfo?.priceMonthly ?? 0, user.locale ?? "en-US")}/month`}
                   {user.planExpiresAt &&
-                    ` · Renews ${new Date(user.planExpiresAt).toLocaleDateString()}`}
+                    ` · Renews ${new Date(user.planExpiresAt).toLocaleDateString(user.locale ?? "en-US")}`}
                 </p>
               </div>
             </div>

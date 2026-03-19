@@ -55,7 +55,7 @@ export function SpeedTrendChart({ stats }: SpeedTrendChartProps) {
           return (
             <div
               key={`${s.date}-${i}`}
-              className="flex-1 rounded-t bg-sky-500/60 transition-all hover:bg-sky-500"
+              className="flex-1 rounded-t bg-sky-500 transition-all hover:bg-sky-600 dark:bg-sky-400 dark:hover:bg-sky-300"
               style={{ height: `${heightPct}%` }}
               title={`${s.date}: ${s.wpm} WPM`}
             />

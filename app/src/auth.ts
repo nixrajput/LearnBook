@@ -79,6 +79,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.user.role = user.role ?? "USER";
       session.user.plan = user.plan ?? "FREE";
       session.user.displayName = user.displayName ?? null;
+      session.user.locale = user.locale ?? null;
+      session.user.primaryLanguage = user.primaryLanguage ?? null;
       return session;
     },
   },

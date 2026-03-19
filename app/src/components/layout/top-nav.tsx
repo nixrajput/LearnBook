@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search, Menu, Moon, Sun, Monitor, BookOpen } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useSearchStore } from "@/stores/search-store";
 import { navItems } from "@/config/navigation";
@@ -27,13 +27,9 @@ export function TopNav({ onMenuClick, user }: TopNavProps) {
   const pathname = usePathname();
   const { theme, resolvedTheme, setTheme } = useTheme();
   const setSearchOpen = useSearchStore((s) => s.setOpen);
-  const mountedRef = useRef(false);
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
-    if (!mountedRef.current) {
-      mountedRef.current = true;
-      setMounted(true);
-    }
+    setMounted(true);
   }, []);
 
   return (

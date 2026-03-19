@@ -41,8 +41,8 @@ const DEFAULT_PLANS: PlanInfo[] = [
   {
     planKey: "PRO",
     name: "Pro",
-    priceMonthly: 799,
-    priceYearly: 7990,
+    priceMonthly: 499,
+    priceYearly: 4999,
     stripePriceIdMonthly: null,
     stripePriceIdYearly: null,
     features: JSON.stringify([
@@ -61,8 +61,8 @@ const DEFAULT_PLANS: PlanInfo[] = [
   {
     planKey: "PREMIUM",
     name: "Premium",
-    priceMonthly: 1499,
-    priceYearly: 14990,
+    priceMonthly: 999,
+    priceYearly: 9999,
     stripePriceIdMonthly: null,
     stripePriceIdYearly: null,
     features: JSON.stringify([
@@ -120,8 +120,18 @@ export function isWithinLimit(current: number, max: number): boolean {
   return max === -1 || current < max;
 }
 
-/** Format price in cents to display string. */
-export function formatPrice(cents: number): string {
-  if (cents === 0) return "Free";
-  return `$${(cents / 100).toFixed(2)}`;
+/** Format price amount to locale-formatted display string. */
+export function formatPrice(amount: number, locale: string = "en-US"): string {
+  if (amount === 0) return "Free";
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
+/** Convert price amount to smallest currency unit for Stripe API. */
+export function toSmallestUnit(amount: number): number {
+  return Math.round(amount * 100);
 }

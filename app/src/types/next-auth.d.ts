@@ -8,6 +8,8 @@ declare module "next-auth" {
       role: string;
       plan: string;
       displayName: string | null;
+      locale: string | null;
+      primaryLanguage: string | null;
     } & DefaultSession["user"];
   }
 
@@ -15,14 +17,18 @@ declare module "next-auth" {
     role: string;
     plan: string;
     displayName: string | null;
+    locale: string | null;
+    primaryLanguage: string | null;
   }
 }
 
-// Augment AdapterUser so the session() callback's `user` param carries role & plan
+// Augment AdapterUser so the session() callback's `user` param carries all custom fields
 declare module "@auth/core/adapters" {
   interface AdapterUser {
     role: string;
     plan: string;
     displayName: string | null;
+    locale: string | null;
+    primaryLanguage: string | null;
   }
 }
