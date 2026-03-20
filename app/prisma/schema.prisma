@@ -395,6 +395,19 @@ model OfferRedemption {
   @@map("offer_redemptions")
 }
 
+model CreditPack {
+  id        String  @id @default(cuid())
+  packKey   String  @unique @map("pack_key")
+  name      String
+  credits   Int
+  price     Int
+  popular   Boolean @default(false)
+  isActive  Boolean @default(true) @map("is_active")
+  sortOrder Int     @default(0) @map("sort_order")
+
+  @@map("credit_packs")
+}
+
 // ─── AI Features ──────────────────────────────────────────────────────────────
 
 model AiCreditBalance {

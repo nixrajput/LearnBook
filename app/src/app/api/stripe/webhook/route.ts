@@ -22,15 +22,32 @@ export async function POST(req: NextRequest) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
       const userId = session.metadata?.userId;
-      const planKey = session.metadata?.planKey;
-      const offerCode = session.metadata?.offerCode;
 
-      if (!userId || !planKey) break;
+      if (!userId) break;
 
-      // Only upgrade if payment is confirmed (not pending bank transfers, etc.)
+      // Only process if payment is confirmed
       if (session.payment_status !== "paid" && session.payment_status !== "no_payment_required") {
         break;
       }
+
+      // Handle credit purchase (one-time payment)
+      if (session.metadata?.type === "credit_purchase") {
+        const credits = parseInt(session.metadata?.credits ?? "0", 10);
+        if (credits > 0) {
+          await db.aiCreditBalance.upsert({
+            where: { userId },
+            update: { credits: { increment: credits } },
+            create: { userId, credits },
+          });
+        }
+        break;
+      }
+
+      // Handle subscription checkout
+      const planKey = session.metadata?.planKey;
+      const offerCode = session.metadata?.offerCode;
+
+      if (!planKey) break;
 
       await db.user.update({
         where: { id: userId },
@@ -41,7 +58,7 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Record offer redemption (idempotent via upsert to handle duplicate delivery)
+      // Record offer redemption (idempotent via upsert)
       if (offerCode) {
         const offer = await db.offer.findUnique({ where: { code: offerCode } });
         if (offer) {
@@ -49,7 +66,6 @@ export async function POST(req: NextRequest) {
             where: { userId_offerId: { userId, offerId: offer.id } },
           });
           if (!existing) {
-            // Check redemption limit before recording
             if (offer.maxRedemptions === null || offer.currentRedemptions < offer.maxRedemptions) {
               await db.offerRedemption.create({
                 data: { userId, offerId: offer.id },

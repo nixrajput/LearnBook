@@ -28,6 +28,7 @@ export function AdminOfferList({ offers }: { offers: OfferRow[] }) {
   const [error, setError] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<OfferRow | null>(null);
+  const [toggleTarget, setToggleTarget] = useState<OfferRow | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   function copyCode(code: string, id: string) {
@@ -37,19 +38,21 @@ export function AdminOfferList({ offers }: { offers: OfferRow[] }) {
     });
   }
 
-  async function toggleActive(id: string, isActive: boolean) {
-    setLoading(id);
+  async function handleToggleConfirm() {
+    if (!toggleTarget) return;
+    setLoading(toggleTarget.id);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/offers/${id}`, {
+      const res = await fetch(`/api/admin/offers/${toggleTarget.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isActive: !isActive }),
+        body: JSON.stringify({ isActive: !toggleTarget.isActive }),
       });
       if (res.ok) router.refresh();
       else setError((await res.json().catch(() => ({}))).error ?? "Failed");
     } finally {
       setLoading(null);
+      setToggleTarget(null);
     }
   }
 
@@ -70,10 +73,16 @@ export function AdminOfferList({ offers }: { offers: OfferRow[] }) {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button size="sm" className="gap-1.5" onClick={() => setShowCreate(!showCreate)}>
-          <Plus className="h-3.5 w-3.5" />
-          {showCreate ? "Cancel" : "Create Offer"}
-        </Button>
+        {showCreate ? (
+          <Button size="sm" variant="outline" onClick={() => setShowCreate(false)}>
+            Cancel
+          </Button>
+        ) : (
+          <Button size="sm" className="gap-1.5" onClick={() => setShowCreate(true)}>
+            <Plus className="h-3.5 w-3.5" />
+            Create Offer
+          </Button>
+        )}
       </div>
 
       {showCreate && (
@@ -146,7 +155,7 @@ export function AdminOfferList({ offers }: { offers: OfferRow[] }) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => toggleActive(o.id, o.isActive)}
+                    onClick={() => setToggleTarget(o)}
                     disabled={loading === o.id}
                   >
                     {o.isActive ? (
@@ -174,6 +183,21 @@ export function AdminOfferList({ offers }: { offers: OfferRow[] }) {
           })}
         </div>
       )}
+      <ConfirmDialog
+        open={!!toggleTarget}
+        onOpenChange={(open) => !open && setToggleTarget(null)}
+        title={toggleTarget?.isActive ? "Deactivate Offer" : "Activate Offer"}
+        description={
+          toggleTarget?.isActive
+            ? `Deactivate offer "${toggleTarget?.code}"? Users will no longer be able to redeem it.`
+            : `Activate offer "${toggleTarget?.code}"? Users will be able to redeem it.`
+        }
+        confirmLabel={toggleTarget?.isActive ? "Deactivate" : "Activate"}
+        variant={toggleTarget?.isActive ? "warning" : "default"}
+        onConfirm={handleToggleConfirm}
+        loading={loading === toggleTarget?.id}
+      />
+
       <ConfirmDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}

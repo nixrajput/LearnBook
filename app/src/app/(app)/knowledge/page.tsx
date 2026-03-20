@@ -50,7 +50,7 @@ export default function KnowledgePage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-5xl px-4 py-16 text-center">
+      <div className="mx-auto max-w-6xl px-4 py-16 text-center">
         <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-indigo-500" />
         <p className="text-sm text-muted-foreground">Loading knowledge graph...</p>
       </div>
@@ -59,7 +59,7 @@ export default function KnowledgePage() {
 
   if (error === "upgrade") {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-16 text-center">
+      <div className="mx-auto max-w-6xl px-4 py-16 text-center">
         <Sparkles className="mx-auto mb-4 h-10 w-10 text-amber-500" />
         <h2 className="mb-2 text-xl font-bold">Knowledge Graph</h2>
         <p className="mb-6 text-muted-foreground">
@@ -75,7 +75,7 @@ export default function KnowledgePage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
+    <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">Knowledge Graph</h1>
         <p className="mt-1 text-sm text-muted-foreground">

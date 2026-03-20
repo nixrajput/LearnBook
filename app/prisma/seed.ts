@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { seedCourse, seedPlanConfigs } from "../src/lib/content/seeder";
+import { seedCourse, seedPlanConfigs, seedCreditPacks } from "../src/lib/content/seeder";
 
 const prisma = new PrismaClient();
 
@@ -9,6 +9,10 @@ async function main() {
   // Seed default plan configs
   await seedPlanConfigs(prisma);
   console.log("✅ Plan configs seeded (FREE, PRO, PREMIUM)");
+
+  // Seed credit packs
+  await seedCreditPacks(prisma);
+  console.log("✅ Credit packs seeded");
 
   // Seed course content
   const result = await seedCourse(prisma, { isPublished: true });

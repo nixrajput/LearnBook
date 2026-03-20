@@ -105,7 +105,7 @@ export default function QuizPage() {
 
   if (generating) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-16 text-center">
+      <div className="mx-auto max-w-6xl px-4 py-16 text-center">
         <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-indigo-500" />
         <h2 className="text-lg font-semibold">Generating quiz...</h2>
         <p className="text-sm text-muted-foreground">AI is creating questions from the chapter</p>
@@ -115,7 +115,7 @@ export default function QuizPage() {
 
   if (results) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-8">
+      <div className="mx-auto max-w-6xl px-4 py-8">
         <h1 className="mb-6 text-2xl font-bold tracking-tight">Quiz Results</h1>
         <QuizResults {...results} />
         <div className="mt-6 flex gap-3">
@@ -129,7 +129,7 @@ export default function QuizPage() {
 
   if (questions.length === 0) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-16 text-center">
+      <div className="mx-auto max-w-6xl px-4 py-16 text-center">
         {error ? (
           <>
             <p className="mb-4 text-destructive">{error}</p>
@@ -145,7 +145,7 @@ export default function QuizPage() {
   const allAnswered = questions.every((_, i) => answers[i] !== undefined);
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
+    <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">Chapter Quiz</h1>
         <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-secondary">

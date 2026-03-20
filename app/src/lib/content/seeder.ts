@@ -201,3 +201,34 @@ export async function seedPlanConfigs(db: PrismaClient): Promise<void> {
     });
   }
 }
+
+export async function seedCreditPacks(db: PrismaClient): Promise<void> {
+  const packs = [
+    { packKey: "pack-100", name: "Starter", credits: 100, price: 49, popular: false, sortOrder: 0 },
+    { packKey: "pack-500", name: "Popular", credits: 500, price: 199, popular: true, sortOrder: 1 },
+    {
+      packKey: "pack-1500",
+      name: "Power",
+      credits: 1500,
+      price: 499,
+      popular: false,
+      sortOrder: 2,
+    },
+    {
+      packKey: "pack-5000",
+      name: "Mega",
+      credits: 5000,
+      price: 1499,
+      popular: false,
+      sortOrder: 3,
+    },
+  ];
+
+  for (const pack of packs) {
+    await db.creditPack.upsert({
+      where: { packKey: pack.packKey },
+      update: pack,
+      create: pack,
+    });
+  }
+}

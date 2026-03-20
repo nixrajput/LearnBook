@@ -2,11 +2,30 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Trash2, Shield, ShieldOff, Sparkles } from "lucide-react";
+import {
+  Loader2,
+  Trash2,
+  Shield,
+  ShieldOff,
+  Sparkles,
+  Pencil,
+  Search,
+  ArrowUpDown,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface UserRow {
   id: string;
@@ -38,8 +57,56 @@ export function AdminUserTable({ users }: { users: UserRow[] }) {
   const [deleteTarget, setDeleteTarget] = useState<UserRow | null>(null);
   const [roleToggleTarget, setRoleToggleTarget] = useState<UserRow | null>(null);
   const [filter, setFilter] = useState<"ALL" | "FREE" | "PRO" | "PREMIUM">("ALL");
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<"createdAt" | "name" | "credits">("createdAt");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [creditEditTarget, setCreditEditTarget] = useState<UserRow | null>(null);
+  const [creditEditValue, setCreditEditValue] = useState(0);
+  const [creditSaving, setCreditSaving] = useState(false);
+  const [creditConfirmOpen, setCreditConfirmOpen] = useState(false);
 
-  const filtered = filter === "ALL" ? users : users.filter((u) => u.plan === filter);
+  function toggleSort(col: typeof sortBy) {
+    if (sortBy === col) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else {
+      setSortBy(col);
+      setSortDir("desc");
+    }
+  }
+
+  const filtered = users
+    .filter((u) => filter === "ALL" || u.plan === filter)
+    .filter((u) => {
+      if (!search) return true;
+      const q = search.toLowerCase();
+      return (u.name?.toLowerCase().includes(q) ?? false) || u.email.toLowerCase().includes(q);
+    })
+    .sort((a, b) => {
+      const dir = sortDir === "asc" ? 1 : -1;
+      if (sortBy === "name") return dir * (a.name ?? "").localeCompare(b.name ?? "");
+      if (sortBy === "credits") return dir * ((a.aiCredits ?? 0) - (b.aiCredits ?? 0));
+      return dir * (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    });
+
+  async function handleCreditSave() {
+    if (!creditEditTarget) return;
+    setCreditSaving(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/credits", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: creditEditTarget.id, credits: creditEditValue }),
+      });
+      if (res.ok) {
+        setCreditEditTarget(null);
+        router.refresh();
+      } else {
+        setError((await res.json().catch(() => ({}))).error ?? "Failed to update credits");
+      }
+    } finally {
+      setCreditSaving(false);
+    }
+  }
 
   async function handleRoleToggleConfirm() {
     if (!roleToggleTarget) return;
@@ -83,23 +150,34 @@ export function AdminUserTable({ users }: { users: UserRow[] }) {
 
   return (
     <div className="space-y-3">
-      {/* Plan filter tabs */}
-      <div className="flex gap-1 rounded-lg border bg-muted/40 p-1">
-        {(["ALL", "FREE", "PRO", "PREMIUM"] as const).map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
-              filter === f
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {f === "ALL"
-              ? `All (${users.length})`
-              : `${f} (${users.filter((u) => u.plan === f).length})`}
-          </button>
-        ))}
+      {/* Search + Filter */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name or email..."
+            className="h-9 w-64 pl-9 text-sm"
+          />
+        </div>
+        <div className="flex gap-1 rounded-lg border bg-muted/40 p-1">
+          {(["ALL", "FREE", "PRO", "PREMIUM"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+                filter === f
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {f === "ALL"
+                ? `All (${users.length})`
+                : `${f} (${users.filter((u) => u.plan === f).length})`}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-xl border bg-card">
@@ -113,7 +191,12 @@ export function AdminUserTable({ users }: { users: UserRow[] }) {
             <thead>
               <tr className="border-b bg-muted/40">
                 <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">
-                  User
+                  <button
+                    onClick={() => toggleSort("name")}
+                    className="inline-flex items-center gap-1 hover:text-foreground"
+                  >
+                    User <ArrowUpDown className="h-3 w-3" />
+                  </button>
                 </th>
                 <th className="px-4 py-3 text-center text-xs font-medium text-muted-foreground">
                   Plan
@@ -122,13 +205,23 @@ export function AdminUserTable({ users }: { users: UserRow[] }) {
                   Role
                 </th>
                 <th className="px-4 py-3 text-center text-xs font-medium text-muted-foreground">
-                  AI Credits
+                  <button
+                    onClick={() => toggleSort("credits")}
+                    className="inline-flex items-center gap-1 hover:text-foreground"
+                  >
+                    AI Credits <ArrowUpDown className="h-3 w-3" />
+                  </button>
                 </th>
                 <th className="px-4 py-3 text-center text-xs font-medium text-muted-foreground">
                   Content
                 </th>
                 <th className="px-4 py-3 text-center text-xs font-medium text-muted-foreground">
-                  Joined
+                  <button
+                    onClick={() => toggleSort("createdAt")}
+                    className="inline-flex items-center gap-1 hover:text-foreground"
+                  >
+                    Joined <ArrowUpDown className="h-3 w-3" />
+                  </button>
                 </th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground">
                   Actions
@@ -174,14 +267,18 @@ export function AdminUserTable({ users }: { users: UserRow[] }) {
                     </Badge>
                   </td>
                   <td className="px-4 py-3 text-center">
-                    {u.aiCredits !== null ? (
-                      <div className="flex items-center justify-center gap-1 text-sm tabular-nums">
-                        <Sparkles className="h-3 w-3 text-indigo-500" />
-                        {u.aiCredits}
-                      </div>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
-                    )}
+                    <button
+                      className="inline-flex items-center gap-1 text-sm tabular-nums transition-colors hover:text-primary"
+                      onClick={() => {
+                        setCreditEditTarget(u);
+                        setCreditEditValue(u.aiCredits ?? 0);
+                      }}
+                      title="Click to adjust credits"
+                    >
+                      <Sparkles className="h-3 w-3 text-indigo-500" />
+                      {u.aiCredits ?? "—"}
+                      <Pencil className="h-2.5 w-2.5 text-muted-foreground/50" />
+                    </button>
                   </td>
                   <td className="px-4 py-3 text-center">
                     <div className="text-xs tabular-nums text-muted-foreground">
@@ -251,6 +348,59 @@ export function AdminUserTable({ users }: { users: UserRow[] }) {
         variant="danger"
         onConfirm={handleDeleteConfirm}
         loading={loading === deleteTarget?.id}
+      />
+
+      {/* Credit adjustment dialog */}
+      <Dialog open={!!creditEditTarget} onOpenChange={(open) => !open && setCreditEditTarget(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Adjust AI Credits</DialogTitle>
+            <DialogDescription>
+              Set credit balance for {creditEditTarget?.name ?? creditEditTarget?.email}. Current
+              balance: {creditEditTarget?.aiCredits ?? 0} credits.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label htmlFor="credit-value" className="text-sm">
+              New credit balance
+            </Label>
+            <Input
+              id="credit-value"
+              type="number"
+              value={creditEditValue}
+              onChange={(e) => setCreditEditValue(Math.max(0, parseInt(e.target.value) || 0))}
+              className="mt-2"
+              min={0}
+              max={100000}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCreditEditTarget(null)}
+              disabled={creditSaving}
+            >
+              Cancel
+            </Button>
+            <Button onClick={() => setCreditConfirmOpen(true)} disabled={creditSaving}>
+              Save Credits
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDialog
+        open={creditConfirmOpen}
+        onOpenChange={(open) => !open && setCreditConfirmOpen(false)}
+        title="Confirm Credit Adjustment"
+        description={`Set ${creditEditTarget?.name ?? creditEditTarget?.email}'s credit balance to ${creditEditValue}? Current balance: ${creditEditTarget?.aiCredits ?? 0}.`}
+        confirmLabel="Confirm"
+        variant="warning"
+        onConfirm={() => {
+          setCreditConfirmOpen(false);
+          handleCreditSave();
+        }}
+        loading={creditSaving}
       />
     </div>
   );

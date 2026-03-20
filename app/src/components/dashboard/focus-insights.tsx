@@ -1,4 +1,8 @@
+"use client";
+
 import { Clock, Zap } from "lucide-react";
+import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { ChartTooltipContent } from "@/components/ui/chart";
 import type { FocusInsights as FocusData } from "@/lib/content";
 
 interface FocusInsightsProps {
@@ -20,7 +24,11 @@ export function FocusInsights({ insights }: FocusInsightsProps) {
     );
   }
 
-  const maxBucket = Math.max(...insights.hourDistribution, 1);
+  const chartData = insights.hourDistribution.map((secs, hour) => ({
+    name: `${hour}:00`,
+    value: Math.round(secs / 60),
+    isPeak: hour === insights.peakHour,
+  }));
 
   return (
     <div className="rounded-xl border bg-card p-6">
@@ -46,23 +54,22 @@ export function FocusInsights({ insights }: FocusInsightsProps) {
         </div>
       </div>
 
-      {/* Hour distribution chart */}
       <div className="mt-4">
         <div className="mb-1 text-xs text-muted-foreground">Reading hours</div>
-        <div className="flex h-16 items-end gap-px">
-          {insights.hourDistribution.map((secs, hour) => {
-            const heightPct = Math.max(secs > 0 ? 4 : 0, Math.round((secs / maxBucket) * 100));
-            const isPeak = hour === insights.peakHour;
-            return (
-              <div
-                key={hour}
-                className={`flex-1 rounded-t transition-all ${isPeak ? "bg-violet-600 dark:bg-violet-400" : "bg-violet-300 dark:bg-violet-700"}`}
-                style={{ height: `${heightPct}%` }}
-                title={`${hour}:00 — ${Math.round(secs / 60)}min`}
-              />
-            );
-          })}
-        </div>
+        <ResponsiveContainer width="100%" height={64}>
+          <BarChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+            <XAxis dataKey="name" hide />
+            <Tooltip content={<ChartTooltipContent formatter={(v) => `${v} min`} />} />
+            <Bar dataKey="value" name="Minutes" radius={[2, 2, 0, 0]}>
+              {chartData.map((entry, i) => (
+                <Cell
+                  key={i}
+                  fill={entry.isPeak ? "hsl(var(--chart-2))" : "hsl(var(--chart-2) / 0.35)"}
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
         <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
           <span>12am</span>
           <span>6am</span>

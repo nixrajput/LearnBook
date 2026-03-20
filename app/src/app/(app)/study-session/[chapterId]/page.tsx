@@ -17,7 +17,7 @@ export default async function StudySessionPage({ params }: PageProps) {
   // Server-side plan gate — FREE users see upgrade prompt
   if (user.plan === "FREE") {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-16 text-center">
+      <div className="mx-auto max-w-6xl px-4 py-16 text-center">
         <Sparkles className="mx-auto mb-4 h-10 w-10 text-amber-500" />
         <h2 className="mb-2 text-xl font-bold">AI Study Sessions</h2>
         <p className="mb-6 text-muted-foreground">
@@ -39,7 +39,7 @@ export default async function StudySessionPage({ params }: PageProps) {
   if (!chapter) notFound();
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
+    <div className="mx-auto max-w-6xl px-4 py-8">
       <SessionChat
         chapterId={chapterId}
         chapterTitle={`Ch. ${chapter.number} — ${chapter.title}`}

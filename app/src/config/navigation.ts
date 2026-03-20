@@ -11,7 +11,6 @@ import {
   BarChart3,
   Tag,
   CreditCard,
-  Upload,
   Settings,
   Shield,
 } from "lucide-react";
@@ -70,13 +69,13 @@ export const adminNavGroups: NavGroup[] = [
     items: [
       { label: "Users", href: "/admin/users", icon: Users },
       { label: "Courses", href: "/admin/courses", icon: BookOpen },
-      { label: "Upload", href: "/admin/courses/upload", icon: Upload },
     ],
   },
   {
     label: "Billing",
     items: [
       { label: "Plans", href: "/admin/plans", icon: CreditCard },
+      { label: "Credit Packs", href: "/admin/credit-packs", icon: Sparkles },
       { label: "Offers", href: "/admin/offers", icon: Tag },
     ],
   },

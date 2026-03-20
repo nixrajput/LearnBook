@@ -1,5 +1,7 @@
 import { db } from "@/lib/db";
 import { formatPrice } from "@/lib/plans";
+import { AreaTrend } from "@/components/admin/charts/area-trend";
+import { BarComparison } from "@/components/admin/charts/bar-comparison";
 import {
   Users,
   BookOpen,
@@ -46,6 +48,26 @@ export default async function AdminAnalyticsPage() {
     db.highlight.count(),
     db.user.count({ where: { stripeSubscriptionId: { not: null } } }),
   ]);
+
+  // Daily signup trend (30 days)
+  const signupDates = await db.user.findMany({
+    where: { createdAt: { gte: thirtyDaysAgo } },
+    select: { createdAt: true },
+  });
+  const signupTrend = buildDailyTrend(
+    signupDates.map((u) => u.createdAt),
+    30,
+  );
+
+  // Daily AI usage (30 days)
+  const aiUsageDates = await db.aiUsageLog.findMany({
+    where: { createdAt: { gte: thirtyDaysAgo } },
+    select: { createdAt: true, credits: true },
+  });
+  const aiTrend = buildDailySumTrend(
+    aiUsageDates.map((u) => ({ date: u.createdAt, value: u.credits })),
+    30,
+  );
 
   const freeUsers = totalUsers - proUsers - premiumUsers;
   const mrr = proUsers * 499 + premiumUsers * 999;
@@ -113,12 +135,37 @@ export default async function AdminAnalyticsPage() {
       {/* Section 1: Users & Revenue */}
       {/* ═══════════════════════════════════════════════════════════════════ */}
       <div>
-        <SectionHeader icon={Users} title="Users & Revenue" color="text-blue-500" />
+        <SectionHeader
+          icon={Users}
+          title="Users & Revenue"
+          color="text-blue-500"
+          bg="bg-blue-500/10"
+        />
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard label="Total Users" value={totalUsers} />
           <MetricCard label="New (7d)" value={`+${recentUsers7d}`} />
           <MetricCard label="New (30d)" value={`+${recentUsers30d}`} />
           <MetricCard label="Paid Conversion" value={`${conversionRate}%`} />
+        </div>
+
+        {/* Signup trend chart */}
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <AreaTrend
+            title="Daily Signups"
+            subtitle="Last 30 days"
+            data={signupTrend}
+            total={signupTrend.reduce((s, d) => s + d.value, 0)}
+            unit="total signups"
+            color="hsl(var(--chart-1))"
+          />
+          <AreaTrend
+            title="Daily AI Credits"
+            subtitle="Last 30 days"
+            data={aiTrend}
+            total={aiTrend.reduce((s, d) => s + d.value, 0)}
+            unit="total credits"
+            color="hsl(var(--chart-2))"
+          />
         </div>
 
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
@@ -201,7 +248,12 @@ export default async function AdminAnalyticsPage() {
       {/* Section 2: Content */}
       {/* ═══════════════════════════════════════════════════════════════════ */}
       <div>
-        <SectionHeader icon={BookOpen} title="Content & Engagement" color="text-primary" />
+        <SectionHeader
+          icon={BookOpen}
+          title="Content & Engagement"
+          color="text-primary"
+          bg="bg-primary/10"
+        />
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard label="Courses" value={`${publishedCourses}/${totalCourses}`} />
           <MetricCard label="Notes" value={totalNotes} />
@@ -263,7 +315,12 @@ export default async function AdminAnalyticsPage() {
       {/* Section 3: AI Usage */}
       {/* ═══════════════════════════════════════════════════════════════════ */}
       <div>
-        <SectionHeader icon={Sparkles} title="AI Usage" color="text-indigo-500" />
+        <SectionHeader
+          icon={Sparkles}
+          title="AI Usage"
+          color="text-indigo-500"
+          bg="bg-indigo-500/10"
+        />
         <div className="mt-4">
           <AIUsageSection />
         </div>
@@ -273,7 +330,12 @@ export default async function AdminAnalyticsPage() {
       {/* Section 4: Feature Adoption */}
       {/* ═══════════════════════════════════════════════════════════════════ */}
       <div>
-        <SectionHeader icon={BarChart3} title="Feature Adoption" color="text-violet-500" />
+        <SectionHeader
+          icon={BarChart3}
+          title="Feature Adoption"
+          color="text-violet-500"
+          bg="bg-violet-500/10"
+        />
         <div className="mt-4">
           <FeatureAdoptionSection />
         </div>
@@ -288,15 +350,19 @@ function SectionHeader({
   icon: Icon,
   title,
   color,
+  bg,
 }: {
   icon: React.ElementType;
   title: string;
   color: string;
+  bg?: string;
 }) {
   return (
-    <div className="flex items-center gap-2 border-b pb-2">
-      <Icon className={`h-4 w-4 ${color}`} />
-      <h3 className="text-sm font-semibold">{title}</h3>
+    <div className="flex items-center gap-3">
+      <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${bg ?? "bg-muted"}`}>
+        <Icon className={`h-4 w-4 ${color}`} />
+      </div>
+      <h3 className="text-base font-semibold">{title}</h3>
     </div>
   );
 }
@@ -310,58 +376,101 @@ function MetricCard({ label, value }: { label: string; value: string | number })
   );
 }
 
+interface DailyPoint {
+  date: string;
+  value: number;
+}
+
+function buildDailyTrend(dates: Date[], days: number): DailyPoint[] {
+  const now = new Date();
+  const result: DailyPoint[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split("T")[0];
+    result.push({
+      date: dateStr,
+      value: dates.filter((dt) => dt.toISOString().split("T")[0] === dateStr).length,
+    });
+  }
+  return result;
+}
+
+function buildDailySumTrend(items: { date: Date; value: number }[], days: number): DailyPoint[] {
+  const now = new Date();
+  const result: DailyPoint[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split("T")[0];
+    result.push({
+      date: dateStr,
+      value: items
+        .filter((it) => it.date.toISOString().split("T")[0] === dateStr)
+        .reduce((s, it) => s + it.value, 0),
+    });
+  }
+  return result;
+}
+
 async function AIUsageSection() {
-  const [totalCreditsResult, totalLogs, topActionsRaw] = await Promise.all([
+  const [totalCreditsResult, totalLogs, topActionsRaw, modelUsageRaw] = await Promise.all([
     db.aiUsageLog.aggregate({ _sum: { credits: true } }),
     db.aiUsageLog.count(),
     db.aiUsageLog.groupBy({ by: ["action"], _count: true, _sum: { credits: true } }),
+    db.aiUsageLog.groupBy({ by: ["model"], _count: true, _sum: { credits: true } }),
   ]);
   const totalCreditsUsed = totalCreditsResult._sum.credits ?? 0;
   const topActions = topActionsRaw.sort((a, b) => b._count - a._count).slice(0, 6);
-  const maxCount = topActions.length > 0 ? Math.max(...topActions.map((a) => a._count)) : 1;
+  const topModels = modelUsageRaw.sort((a, b) => b._count - a._count).slice(0, 5);
+
+  const actionChartData = topActions.map((a) => ({
+    name: a.action,
+    value: a._count,
+  }));
+
+  const modelChartData = topModels.map((m) => ({
+    name: m.model.split("/").pop() ?? m.model,
+    value: m._sum.credits ?? 0,
+  }));
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
-      <div className="rounded-xl border bg-card p-6">
-        <div className="grid grid-cols-2 gap-6">
-          <div>
-            <div className="text-2xl font-bold tabular-nums">{totalCreditsUsed}</div>
-            <div className="text-xs text-muted-foreground">Total credits consumed</div>
+    <div className="space-y-4">
+      {/* Metric cards */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="rounded-xl border bg-card p-5">
+          <div className="text-2xl font-bold tabular-nums">{totalCreditsUsed.toLocaleString()}</div>
+          <div className="text-xs text-muted-foreground">Total credits consumed</div>
+        </div>
+        <div className="rounded-xl border bg-card p-5">
+          <div className="text-2xl font-bold tabular-nums">{totalLogs.toLocaleString()}</div>
+          <div className="text-xs text-muted-foreground">Total AI requests</div>
+        </div>
+        <div className="rounded-xl border bg-card p-5">
+          <div className="text-2xl font-bold tabular-nums">
+            {totalLogs > 0 ? (totalCreditsUsed / totalLogs).toFixed(1) : "—"}
           </div>
-          <div>
-            <div className="text-2xl font-bold tabular-nums">{totalLogs}</div>
-            <div className="text-xs text-muted-foreground">Total AI requests</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold tabular-nums">
-              {totalLogs > 0 ? (totalCreditsUsed / totalLogs).toFixed(1) : "—"}
-            </div>
-            <div className="text-xs text-muted-foreground">Avg credits/request</div>
-          </div>
+          <div className="text-xs text-muted-foreground">Avg credits/request</div>
         </div>
       </div>
 
+      {/* Charts */}
       {topActions.length > 0 && (
-        <div className="rounded-xl border bg-card p-6">
-          <h4 className="mb-4 text-sm font-semibold text-muted-foreground">Usage by Action</h4>
-          <div className="space-y-2.5">
-            {topActions.map((a) => (
-              <div key={a.action}>
-                <div className="mb-1 flex items-center justify-between text-xs">
-                  <span className="font-mono">{a.action}</span>
-                  <span className="tabular-nums text-muted-foreground">
-                    {a._count} calls · {a._sum.credits ?? 0} cr
-                  </span>
-                </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
-                  <div
-                    className="h-full rounded-full bg-indigo-500 transition-all"
-                    style={{ width: `${(a._count / maxCount) * 100}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <BarComparison
+            title="Requests by Action"
+            data={actionChartData}
+            color="hsl(var(--chart-2))"
+            height={180}
+          />
+          {modelChartData.length > 0 && (
+            <BarComparison
+              title="Credits by Model"
+              data={modelChartData}
+              color="hsl(var(--chart-4))"
+              height={180}
+            />
+          )}
         </div>
       )}
     </div>

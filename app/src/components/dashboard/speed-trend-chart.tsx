@@ -1,4 +1,8 @@
+"use client";
+
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { ChartTooltipContent } from "@/components/ui/chart";
 import type { ReadingSpeedStats } from "@/lib/content";
 
 interface SpeedTrendChartProps {
@@ -18,7 +22,10 @@ export function SpeedTrendChart({ stats }: SpeedTrendChartProps) {
     );
   }
 
-  const maxWpm = Math.max(...stats.sessions.map((s) => s.wpm), 1);
+  const chartData = stats.sessions.slice(-20).map((s) => ({
+    date: s.date,
+    value: s.wpm,
+  }));
 
   return (
     <div className="rounded-xl border bg-card p-6">
@@ -48,24 +55,26 @@ export function SpeedTrendChart({ stats }: SpeedTrendChartProps) {
         </div>
       </div>
 
-      {/* Simple bar chart */}
-      <div className="flex h-24 items-end gap-1">
-        {stats.sessions.slice(-20).map((s, i) => {
-          const heightPct = Math.max(4, Math.round((s.wpm / maxWpm) * 100));
-          return (
-            <div
-              key={`${s.date}-${i}`}
-              className="flex-1 rounded-t bg-sky-500 transition-all hover:bg-sky-600 dark:bg-sky-400 dark:hover:bg-sky-300"
-              style={{ height: `${heightPct}%` }}
-              title={`${s.date}: ${s.wpm} WPM`}
-            />
-          );
-        })}
-      </div>
-      <div className="mt-2 flex justify-between text-[10px] text-muted-foreground">
-        <span>{stats.sessions.slice(-20)[0]?.date ?? ""}</span>
-        <span>{stats.sessions[stats.sessions.length - 1]?.date ?? ""}</span>
-      </div>
+      <ResponsiveContainer width="100%" height={96}>
+        <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
+          <defs>
+            <linearGradient id="speedGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.25} />
+              <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <XAxis dataKey="date" hide />
+          <Tooltip content={<ChartTooltipContent formatter={(v) => `${v} WPM`} />} />
+          <Area
+            type="monotone"
+            dataKey="value"
+            name="WPM"
+            stroke="hsl(var(--chart-1))"
+            strokeWidth={2}
+            fill="url(#speedGrad)"
+          />
+        </AreaChart>
+      </ResponsiveContainer>
     </div>
   );
 }

@@ -19,6 +19,10 @@ const mockCourses = [
     totalParts: 9,
     isPublished: true,
     createdAt: "2026-01-01T00:00:00Z",
+    sourceType: "markdown",
+    fileSize: null,
+    enrolledUsers: 5,
+    notesCount: 12,
   },
   {
     id: "c2",
@@ -28,6 +32,10 @@ const mockCourses = [
     totalParts: 5,
     isPublished: false,
     createdAt: "2026-02-01T00:00:00Z",
+    sourceType: "pdf",
+    fileSize: 2500000,
+    enrolledUsers: 0,
+    notesCount: 0,
   },
 ];
 
@@ -58,9 +66,10 @@ describe("AdminCourseTable", () => {
     expect(screen.getByText("backend-eng")).toBeInTheDocument();
   });
 
-  it("shows chapter and part counts", () => {
+  it("shows content stats in compact format", () => {
     render(<AdminCourseTable courses={mockCourses} />);
-    expect(screen.getByText("27")).toBeInTheDocument();
-    expect(screen.getByText("9")).toBeInTheDocument();
+    // Content column shows "9p · 27ch · 12n" format
+    expect(screen.getByText("9p · 27ch · 12n")).toBeInTheDocument();
+    expect(screen.getByText("5p · 15ch · 0n")).toBeInTheDocument();
   });
 });

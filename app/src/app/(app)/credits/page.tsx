@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth/session";
-import { Sparkles, ArrowRight, TrendingUp } from "lucide-react";
+import { Sparkles, ArrowRight, TrendingUp, ShoppingCart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CreditPackCards } from "@/components/credits/credit-pack-cards";
+import { getAllCreditPacks } from "@/config/credit-packs";
 
 export const metadata: Metadata = { title: "AI Credits" };
 
@@ -19,7 +21,7 @@ export default async function CreditsPage() {
   const plan = user.plan ?? "FREE";
   const monthlyAllocation = PLAN_CREDITS[plan] ?? 100;
 
-  const [balance, recentUsage, usageByAction] = await Promise.all([
+  const [balance, recentUsage, usageByAction, creditPacks] = await Promise.all([
     db.aiCreditBalance.findUnique({ where: { userId: user.id } }),
     db.aiUsageLog.findMany({
       where: { userId: user.id },
@@ -39,6 +41,7 @@ export default async function CreditsPage() {
       _count: true,
       _sum: { credits: true },
     }),
+    getAllCreditPacks(),
   ]);
 
   const credits = balance?.credits ?? 0;
@@ -47,7 +50,7 @@ export default async function CreditsPage() {
   const totalUsed = sortedActions.reduce((s, a) => s + (a._sum.credits ?? 0), 0);
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
+    <div className="mx-auto max-w-6xl px-4 py-8">
       <h1 className="mb-8 text-3xl font-bold tracking-tight">AI Credits</h1>
 
       {/* Balance card */}
@@ -86,6 +89,21 @@ export default async function CreditsPage() {
               style={{ width: `${usagePct}%` }}
             />
           </div>
+        </div>
+      </div>
+
+      {/* Buy more credits */}
+      <div className="mb-8 rounded-xl border bg-card">
+        <div className="flex items-center gap-2 border-b px-6 py-4">
+          <ShoppingCart className="h-4 w-4 text-primary" />
+          <h2 className="font-semibold">Buy More Credits</h2>
+        </div>
+        <div className="px-6 py-4">
+          <p className="mb-4 text-sm text-muted-foreground">
+            Need more credits? Purchase additional packs anytime. Credits are added instantly and
+            never expire.
+          </p>
+          <CreditPackCards packs={creditPacks} locale={user.locale ?? "en-US"} />
         </div>
       </div>
 
