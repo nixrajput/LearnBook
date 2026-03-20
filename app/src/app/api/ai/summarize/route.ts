@@ -29,30 +29,49 @@ export async function POST(req: NextRequest) {
   });
   if (!chapter) return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
 
-  const { model, def } = await getAiModel(user.id, user.plan ?? "FREE", "summarize");
+  let modelResult;
+  try {
+    const { model, def } = await getAiModel(user.id, user.plan ?? "FREE", "summarize");
 
-  const result = streamText({
-    model,
-    prompt: summarizePrompt(chapter.title, chapter.rawContent),
-  });
+    const result = streamText({
+      model,
+      prompt: summarizePrompt(chapter.title, chapter.rawContent),
+    });
 
-  // Reconcile actual cost after stream completes
-  Promise.resolve(result.usage)
-    .then((usage) => {
-      reconcileCredits(
-        user.id,
-        "summarize",
-        def.provider,
-        def.id,
-        usage.inputTokens ?? 0,
-        usage.outputTokens ?? 0,
-        def.multiplier,
-        2,
-        chapter.courseId,
-        chapterId,
-      ).catch(() => {});
-    })
-    .catch(() => {});
+    Promise.resolve(result.usage)
+      .then((usage) => {
+        reconcileCredits(
+          user.id,
+          "summarize",
+          def.provider,
+          def.id,
+          usage.inputTokens ?? 0,
+          usage.outputTokens ?? 0,
+          def.multiplier,
+          2,
+          chapter.courseId,
+          chapterId,
+        ).catch(() => {});
+      })
+      .catch(() => {
+        db.aiCreditBalance
+          .update({
+            where: { userId: user.id },
+            data: { credits: { increment: 2 } },
+          })
+          .catch(() => {});
+      });
 
-  return result.toTextStreamResponse();
+    modelResult = result;
+  } catch {
+    await db.aiCreditBalance
+      .update({
+        where: { userId: user.id },
+        data: { credits: { increment: 2 } },
+      })
+      .catch(() => {});
+    return NextResponse.json({ error: "AI service unavailable" }, { status: 503 });
+  }
+
+  return modelResult.toTextStreamResponse();
 }

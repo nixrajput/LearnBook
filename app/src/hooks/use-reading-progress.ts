@@ -13,8 +13,11 @@ export function useReadingProgress(chapterId: string, courseId?: string, wordCou
   const updateServer = useRef(
     debounce(async (pct: number, chId: string) => {
       const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
-      accumulatedRef.current += elapsed;
       startTimeRef.current = Date.now();
+
+      // Send only the delta since last update, not accumulated total
+      if (elapsed <= 0) return;
+      accumulatedRef.current += elapsed;
 
       const completed = pct >= 0.95;
       try {
@@ -24,7 +27,7 @@ export function useReadingProgress(chapterId: string, courseId?: string, wordCou
           body: JSON.stringify({
             scrollPosition: pct,
             completed,
-            timeSpentSec: accumulatedRef.current,
+            timeSpentSec: elapsed,
           }),
         });
       } catch {

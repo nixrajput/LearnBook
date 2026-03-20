@@ -11,6 +11,7 @@ interface PlanCardProps {
   priceMonthly: number;
   priceYearly: number;
   features: string;
+  featureLabels?: string[];
   popular?: boolean;
   isCurrentPlan?: boolean;
   billingInterval: "monthly" | "yearly";
@@ -25,6 +26,7 @@ export function PlanCard({
   priceMonthly,
   priceYearly,
   features,
+  featureLabels = [],
   popular,
   isCurrentPlan,
   billingInterval,
@@ -119,18 +121,24 @@ export function PlanCard({
       )}
 
       <ul className="mb-8 space-y-3">
-        {featureList.map((feat, i) => (
-          <li key={i} className="flex items-center gap-2 text-sm">
-            {feat === false ? (
-              <XCircle className="h-4 w-4 flex-shrink-0 text-muted-foreground/40" />
-            ) : (
-              <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-emerald-500" />
-            )}
-            <span className={feat === false ? "text-muted-foreground/50" : "text-foreground"}>
-              {typeof feat === "string" ? feat : ""}
-            </span>
-          </li>
-        ))}
+        {featureList.map((feat, i) => {
+          const included = feat !== false;
+          const label = included && typeof feat === "string" ? feat : (featureLabels[i] ?? "");
+          return (
+            <li key={i} className="flex items-center gap-2 text-sm">
+              {included ? (
+                <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-emerald-500" />
+              ) : (
+                <XCircle className="h-4 w-4 flex-shrink-0 text-muted-foreground/40" />
+              )}
+              <span
+                className={included ? "text-foreground" : "text-muted-foreground/50 line-through"}
+              >
+                {label}
+              </span>
+            </li>
+          );
+        })}
       </ul>
 
       <Button

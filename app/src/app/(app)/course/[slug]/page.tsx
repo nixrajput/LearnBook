@@ -57,7 +57,11 @@ export default async function ChapterPage({ params }: PageProps) {
 
   return (
     <>
-      <ReadingProgressBar chapterId={chapter.id} />
+      <ReadingProgressBar
+        chapterId={chapter.id}
+        courseId={courseId}
+        wordCount={chapter.wordCount}
+      />
       <ScrollRestoration chapterSlug={slug} />
       <KeyboardHandler
         prevChapterSlug={chapter.prevChapter?.slug}

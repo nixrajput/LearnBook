@@ -29,11 +29,17 @@ const DEFAULT_PLANS: PlanInfo[] = [
     stripePriceIdMonthly: null,
     stripePriceIdYearly: null,
     features: JSON.stringify([
-      "3 courses",
-      "50 notes",
-      "25 bookmarks",
-      "50 highlights",
-      "Basic analytics",
+      "3 courses", // 0: Courses
+      "50 notes, 25 bookmarks, 50 highlights", // 1: Notes, Bookmarks, Highlights
+      "2 PDF/EPUB uploads", // 2: PDF/EPUB Uploads
+      "5 web articles/month", // 3: Web Articles
+      "100 AI credits/month (budget models)", // 4: AI Credits/month
+      "3 flashcard decks (100 cards)", // 5: Flashcard Decks
+      "Basic analytics", // 6: Analytics
+      false, // 7: AI Study Sessions
+      false, // 8: Knowledge Graph
+      "Join 1 study group", // 9: Study Groups
+      false, // 10: Export & Support
     ]),
     limits: { maxNotes: 50, maxBookmarks: 25, maxHighlights: 50, maxCourses: 3 },
     sortOrder: 0,
@@ -47,13 +53,16 @@ const DEFAULT_PLANS: PlanInfo[] = [
     stripePriceIdYearly: null,
     features: JSON.stringify([
       "Unlimited courses",
-      "Unlimited notes",
-      "Unlimited bookmarks",
-      "Unlimited highlights",
-      "Full stats + streaks",
-      "Reading goals",
-      "Markdown export",
-      "Email support",
+      "Unlimited notes, bookmarks, highlights",
+      "20 PDF/EPUB uploads",
+      "50 web articles/month",
+      "1,500 AI credits/month (budget + standard)",
+      "Unlimited flashcard decks",
+      "Full analytics + reading goals",
+      "AI Study Sessions",
+      "Knowledge graph (view only)",
+      "Create 2 study groups, join 5",
+      "Markdown export + email support",
     ]),
     limits: { maxNotes: -1, maxBookmarks: -1, maxHighlights: -1, maxCourses: -1 },
     sortOrder: 1,
@@ -66,11 +75,17 @@ const DEFAULT_PLANS: PlanInfo[] = [
     stripePriceIdMonthly: null,
     stripePriceIdYearly: null,
     features: JSON.stringify([
-      "Everything in Pro",
-      "Advanced analytics",
-      "Speed trends & forecasts",
-      "All export formats",
-      "Priority support",
+      "Unlimited + exclusive courses", // 0: Courses
+      "Unlimited notes, bookmarks, highlights", // 1: Notes, Bookmarks, Highlights
+      "Unlimited PDF/EPUB uploads", // 2: PDF/EPUB Uploads
+      "Unlimited web articles", // 3: Web Articles
+      "10,000 AI credits/month (all models)", // 4: AI Credits/month
+      "Unlimited flashcard decks", // 5: Flashcard Decks
+      "Advanced analytics + speed trends", // 6: Analytics
+      "AI Study Sessions", // 7: AI Study Sessions
+      "Full knowledge graph", // 8: Knowledge Graph
+      "Create 10 groups (50 members each)", // 9: Study Groups
+      "All export formats + priority support", // 10: Export & Support
     ]),
     limits: { maxNotes: -1, maxBookmarks: -1, maxHighlights: -1, maxCourses: -1 },
     sortOrder: 2,

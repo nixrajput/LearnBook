@@ -13,15 +13,18 @@ interface PricingPageClientProps {
   locale?: string;
 }
 
-const COMPARISON_ROWS = [
+export const COMPARISON_ROWS = [
   { label: "Courses" },
-  { label: "Notes" },
-  { label: "Bookmarks" },
-  { label: "Highlights" },
+  { label: "Notes, Bookmarks, Highlights" },
+  { label: "PDF/EPUB Uploads" },
+  { label: "Web Articles" },
+  { label: "AI Credits/month" },
+  { label: "Flashcard Decks" },
   { label: "Analytics" },
-  { label: "Reading goals" },
-  { label: "Export" },
-  { label: "Support" },
+  { label: "AI Study Sessions" },
+  { label: "Knowledge Graph" },
+  { label: "Study Groups" },
+  { label: "Export & Support" },
 ];
 
 /** Extract the comparison value for a row from a plan's feature list. */
@@ -87,6 +90,7 @@ export function PricingPageClient({
               priceMonthly={plan.priceMonthly}
               priceYearly={plan.priceYearly}
               features={plan.features}
+              featureLabels={COMPARISON_ROWS.map((r) => r.label)}
               popular={plan.sortOrder === 1}
               isCurrentPlan={currentPlan === plan.planKey}
               billingInterval={billingInterval}

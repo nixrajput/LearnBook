@@ -20,6 +20,9 @@ export function SiteFooter() {
             <Link href="/privacy" className="transition-colors hover:text-foreground">
               Privacy
             </Link>
+            <Link href="/status" className="transition-colors hover:text-foreground">
+              Status
+            </Link>
           </div>
         </div>
         <div className="mt-6 border-t pt-6 text-center text-xs text-muted-foreground">

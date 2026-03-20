@@ -18,14 +18,17 @@ export function ReaderLayout({ courseId, parts, chapter, children }: ReaderLayou
   const { sidebarOpen, tocOpen, notesPanelOpen } = useReaderStore();
 
   return (
-    <div className="flex flex-1 overflow-hidden">
+    <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden">
       {/* Left sidebar — fixed height, independently scrollable */}
       <ChapterSidebar parts={parts} open={sidebarOpen} />
 
       {/* Main content area */}
       <div className={cn("flex min-w-0 flex-1 overflow-hidden")}>
         {/* Reader — only this area scrolls */}
-        <div id="reader-scroll-area" className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
+        <div
+          id="reader-scroll-area"
+          className="relative min-w-0 flex-1 overflow-y-auto overflow-x-hidden"
+        >
           {children}
         </div>
 

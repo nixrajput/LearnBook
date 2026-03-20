@@ -218,7 +218,7 @@ export default async function HomePage() {
       : `${data.thisWeekMin}m`;
 
   return (
-    <div className="container mx-auto max-w-5xl px-4 py-8">
+    <div className="mx-auto max-w-5xl px-4 py-8">
       {/* ── Header ────────────────────────────────────────────────────────────── */}
       <div className="mb-8 animate-slide-down">
         <h1 className="mb-1 text-3xl font-bold tracking-tight">Dashboard</h1>

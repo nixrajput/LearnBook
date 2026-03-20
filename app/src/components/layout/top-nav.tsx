@@ -7,13 +7,14 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useSearchStore } from "@/stores/search-store";
-import { navItems } from "@/config/navigation";
 import { cn } from "@/lib/utils/cn";
 import { UserMenu } from "@/components/auth/user-menu";
 import { CreditsBadge } from "@/components/ai/credits-badge";
 
 interface TopNavProps {
   onMenuClick: () => void;
+  /** Show logo in top bar (when sidebar is hidden) */
+  showLogo?: boolean;
   user?: {
     name?: string | null;
     displayName?: string | null;
@@ -24,7 +25,7 @@ interface TopNavProps {
   };
 }
 
-export function TopNav({ onMenuClick, user }: TopNavProps) {
+export function TopNav({ onMenuClick, user, showLogo }: TopNavProps) {
   const pathname = usePathname();
   const { theme, resolvedTheme, setTheme } = useTheme();
   const setSearchOpen = useSearchStore((s) => s.setOpen);
@@ -33,54 +34,32 @@ export function TopNav({ onMenuClick, user }: TopNavProps) {
     setMounted(true);
   }, []);
 
+  // Derive page title from pathname
+  const pageTitle = getPageTitle(pathname);
+
   return (
-    <header className="sticky top-0 z-40 w-full animate-slide-down border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:px-6">
+    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="flex h-14 items-center gap-4 px-4">
         {/* Mobile menu trigger */}
         <Button variant="ghost" size="icon" className="md:hidden" onClick={onMenuClick}>
           <Menu className="h-5 w-5" />
           <span className="sr-only">Toggle menu</span>
         </Button>
 
-        {/* Logo */}
+        {/* Logo — always on mobile, on desktop only when sidebar is hidden */}
         <Link
           href="/dashboard"
-          className="flex shrink-0 items-center gap-2 font-semibold transition-colors hover:text-primary"
+          className={cn(
+            "flex shrink-0 items-center gap-2 font-semibold transition-colors hover:text-primary",
+            !showLogo && "md:hidden",
+          )}
         >
           <BookOpen className="h-5 w-5 text-primary" />
-          <span className="hidden sm:inline">LearnBook</span>
+          <span className="text-sm">LearnBook</span>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="ml-4 hidden items-center gap-1 md:flex">
-          {navItems.map((item) => {
-            const isActive =
-              pathname === item.href ||
-              (item.href !== "/" &&
-                (pathname.startsWith(item.href) ||
-                  (item.href === "/courses" && pathname.startsWith("/course/"))));
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "relative flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-all duration-200",
-                  isActive
-                    ? "bg-accent font-medium text-accent-foreground"
-                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
-                )}
-              >
-                <item.icon
-                  className={cn(
-                    "h-4 w-4 transition-transform duration-200",
-                    !isActive && "group-hover:scale-110",
-                  )}
-                />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+        {/* Page title (desktop only) */}
+        {pageTitle && <h1 className="hidden text-sm font-medium md:block">{pageTitle}</h1>}
 
         <div className="flex-1" />
 
@@ -106,11 +85,11 @@ export function TopNav({ onMenuClick, user }: TopNavProps) {
           <Search className="h-4 w-4" />
         </Button>
 
-        {/* User menu */}
+        {/* Credits + User menu */}
         {user && <CreditsBadge />}
         {user && <UserMenu user={user} />}
 
-        {/* Theme toggle — last in nav */}
+        {/* Theme toggle */}
         <Button
           variant="ghost"
           size="icon"
@@ -130,4 +109,27 @@ export function TopNav({ onMenuClick, user }: TopNavProps) {
       </div>
     </header>
   );
+}
+
+function getPageTitle(pathname: string): string | null {
+  const titles: Record<string, string> = {
+    "/dashboard": "Dashboard",
+    "/courses": "Courses",
+    "/library": "Library",
+    "/notes": "Notes",
+    "/bookmarks": "Bookmarks",
+    "/flashcards": "Flashcards",
+    "/groups": "Study Groups",
+    "/knowledge": "Knowledge Graph",
+    "/credits": "AI Credits",
+    "/settings": "Settings",
+    "/profile": "Profile",
+    "/admin": "Admin Overview",
+    "/admin/analytics": "Analytics",
+    "/admin/users": "Users",
+    "/admin/courses": "Courses",
+    "/admin/plans": "Plans",
+    "/admin/offers": "Offers",
+  };
+  return titles[pathname] ?? null;
 }

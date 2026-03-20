@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Trash2, ToggleLeft, ToggleRight, Plus } from "lucide-react";
+import { Loader2, Trash2, ToggleLeft, ToggleRight, Plus, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,14 @@ export function AdminOfferList({ offers }: { offers: OfferRow[] }) {
   const [error, setError] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<OfferRow | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  function copyCode(code: string, id: string) {
+    navigator.clipboard.writeText(code).then(() => {
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    });
+  }
 
   async function toggleActive(id: string, isActive: boolean) {
     setLoading(id);
@@ -104,6 +112,17 @@ export function AdminOfferList({ offers }: { offers: OfferRow[] }) {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-sm font-bold">{o.code}</span>
+                    <button
+                      onClick={() => copyCode(o.code, o.id)}
+                      className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      title="Copy code"
+                    >
+                      {copiedId === o.id ? (
+                        <Check className="h-3 w-3 text-emerald-500" />
+                      ) : (
+                        <Copy className="h-3 w-3" />
+                      )}
+                    </button>
                     <Badge variant={o.isActive ? "default" : "secondary"} className="text-[10px]">
                       {o.isActive ? "Active" : "Inactive"}
                     </Badge>

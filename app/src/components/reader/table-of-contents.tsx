@@ -41,7 +41,10 @@ export function TableOfContents({ sections, open }: TableOfContentsProps) {
                   const container = document.getElementById("reader-scroll-area");
                   const target = document.getElementById(section.slug);
                   if (container && target) {
-                    container.scrollTo({ top: target.offsetTop - 24, behavior: "smooth" });
+                    const containerRect = container.getBoundingClientRect();
+                    const targetRect = target.getBoundingClientRect();
+                    const offset = targetRect.top - containerRect.top + container.scrollTop - 24;
+                    container.scrollTo({ top: offset, behavior: "smooth" });
                   }
                 }}
                 className={cn(

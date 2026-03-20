@@ -11,7 +11,11 @@ export default async function PublicLayout({ children }: { children: React.React
   const isLoggedIn = !!session?.user;
 
   if (isLoggedIn) {
-    return <AppShell user={session.user}>{children}</AppShell>;
+    return (
+      <AppShell user={session.user} hideSidebar>
+        {children}
+      </AppShell>
+    );
   }
 
   return (

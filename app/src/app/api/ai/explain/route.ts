@@ -28,29 +28,52 @@ export async function POST(req: NextRequest) {
   });
   if (!chapter) return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
 
-  const { model, def } = await getAiModel(user.id, user.plan ?? "FREE", "explain");
+  let modelResult;
+  try {
+    const { model, def } = await getAiModel(user.id, user.plan ?? "FREE", "explain");
 
-  const result = streamText({
-    model,
-    prompt: explainPrompt(text, chapter.rawContent),
-  });
+    const result = streamText({
+      model,
+      prompt: explainPrompt(text, chapter.rawContent),
+    });
 
-  Promise.resolve(result.usage)
-    .then((usage) => {
-      reconcileCredits(
-        user.id,
-        "explain",
-        def.provider,
-        def.id,
-        usage.inputTokens ?? 0,
-        usage.outputTokens ?? 0,
-        def.multiplier,
-        2,
-        chapter.courseId,
-        chapterId,
-      ).catch(() => {});
-    })
-    .catch(() => {});
+    // Reconcile credits after stream completes (or refund on failure)
+    Promise.resolve(result.usage)
+      .then((usage) => {
+        reconcileCredits(
+          user.id,
+          "explain",
+          def.provider,
+          def.id,
+          usage.inputTokens ?? 0,
+          usage.outputTokens ?? 0,
+          def.multiplier,
+          2,
+          chapter.courseId,
+          chapterId,
+        ).catch(() => {});
+      })
+      .catch(() => {
+        // Stream failed — refund reserved credits
+        db.aiCreditBalance
+          .update({
+            where: { userId: user.id },
+            data: { credits: { increment: 2 } },
+          })
+          .catch(() => {});
+      });
 
-  return result.toTextStreamResponse();
+    modelResult = result;
+  } catch {
+    // Model initialization failed — refund reserved credits
+    await db.aiCreditBalance
+      .update({
+        where: { userId: user.id },
+        data: { credits: { increment: 2 } },
+      })
+      .catch(() => {});
+    return NextResponse.json({ error: "AI service unavailable" }, { status: 503 });
+  }
+
+  return modelResult.toTextStreamResponse();
 }

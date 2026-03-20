@@ -32,12 +32,15 @@ export function AiExplainPopover({ chapterId }: AiExplainPopoverProps) {
 
     const rect = range.getBoundingClientRect();
     const scrollArea = document.getElementById("reader-scroll-area");
-    const scrollTop = scrollArea?.scrollTop ?? 0;
+    if (!scrollArea) return;
+
+    const containerRect = scrollArea.getBoundingClientRect();
+    const scrollTop = scrollArea.scrollTop;
 
     setSelectedText(text);
     setPosition({
-      top: rect.bottom + scrollTop + 8,
-      left: Math.max(16, rect.left),
+      top: rect.bottom - containerRect.top + scrollTop + 8,
+      left: Math.max(16, rect.left - containerRect.left),
     });
     setShowResult(false);
     setExplanation("");

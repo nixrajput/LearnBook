@@ -8,6 +8,8 @@ const PUBLIC_PATHS = [
   "/privacy",
   "/api/auth",
   "/api/stripe/webhook",
+  "/api/health",
+  "/status",
 ];
 
 // next-auth v5 beta: overload resolution doesn't infer req type in strict mode

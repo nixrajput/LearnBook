@@ -125,12 +125,17 @@ export async function seedPlanConfigs(db: PrismaClient): Promise<void> {
       priceMonthly: 0,
       priceYearly: 0,
       features: JSON.stringify([
-        "3 courses",
-        "50 notes",
-        "25 bookmarks",
-        "50 highlights",
-        "Basic progress",
-        "Community support",
+        "3 courses", // 0: Courses
+        "50 notes, 25 bookmarks, 50 highlights", // 1: Notes, Bookmarks, Highlights
+        "2 PDF/EPUB uploads", // 2: PDF/EPUB Uploads
+        "5 web articles/month", // 3: Web Articles
+        "100 AI credits/month (budget models)", // 4: AI Credits/month
+        "3 flashcard decks (100 cards)", // 5: Flashcard Decks
+        "Basic analytics", // 6: Analytics
+        false, // 7: AI Study Sessions
+        false, // 8: Knowledge Graph
+        "Join 1 study group", // 9: Study Groups
+        false, // 10: Export & Support
       ]),
       maxNotes: 50,
       maxBookmarks: 25,
@@ -144,14 +149,17 @@ export async function seedPlanConfigs(db: PrismaClient): Promise<void> {
       priceMonthly: 499,
       priceYearly: 4999,
       features: JSON.stringify([
-        "Unlimited courses",
-        "Unlimited notes",
-        "Unlimited bookmarks",
-        "Unlimited highlights",
-        "Full stats + streaks",
-        "Reading goals",
-        "Markdown export",
-        "Email support",
+        "Unlimited courses", // 0: Courses
+        "Unlimited notes, bookmarks, highlights", // 1: Notes, Bookmarks, Highlights
+        "20 PDF/EPUB uploads", // 2: PDF/EPUB Uploads
+        "50 web articles/month", // 3: Web Articles
+        "1,500 AI credits/month (budget + standard)", // 4: AI Credits/month
+        "Unlimited flashcard decks", // 5: Flashcard Decks
+        "Full analytics + reading goals", // 6: Analytics
+        "AI Study Sessions", // 7: AI Study Sessions
+        "Knowledge graph (view only)", // 8: Knowledge Graph
+        "Create 2 study groups, join 5", // 9: Study Groups
+        "Markdown export + email support", // 10: Export & Support
       ]),
       maxNotes: -1,
       maxBookmarks: -1,
@@ -165,14 +173,17 @@ export async function seedPlanConfigs(db: PrismaClient): Promise<void> {
       priceMonthly: 999,
       priceYearly: 9999,
       features: JSON.stringify([
-        "Everything in Pro",
-        "Exclusive courses",
-        "Advanced analytics",
-        "Speed trends",
-        "Completion forecasts",
-        "Focus time analysis",
-        "All export formats",
-        "Priority support",
+        "Unlimited + exclusive courses", // 0: Courses
+        "Unlimited notes, bookmarks, highlights", // 1: Notes, Bookmarks, Highlights
+        "Unlimited PDF/EPUB uploads", // 2: PDF/EPUB Uploads
+        "Unlimited web articles", // 3: Web Articles
+        "10,000 AI credits/month (all models)", // 4: AI Credits/month
+        "Unlimited flashcard decks", // 5: Flashcard Decks
+        "Advanced analytics + speed trends", // 6: Analytics
+        "AI Study Sessions", // 7: AI Study Sessions
+        "Full knowledge graph", // 8: Knowledge Graph
+        "Create 10 groups (50 members each)", // 9: Study Groups
+        "All export formats + priority support", // 10: Export & Support
       ]),
       maxNotes: -1,
       maxBookmarks: -1,

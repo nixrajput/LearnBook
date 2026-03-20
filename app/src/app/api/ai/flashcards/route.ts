@@ -58,9 +58,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Insufficient AI credits" }, { status: 402 });
   }
 
-  const resolvedModel = await getAiModel(user.id, user.plan ?? "FREE", "flashcard");
-
   try {
+    const resolvedModel = await getAiModel(user.id, user.plan ?? "FREE", "flashcard");
+
     const { cards, inputTokens, outputTokens } = await generateFlashcards(content, resolvedModel);
 
     // Reconcile credits with actual usage
@@ -96,13 +96,13 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ cards: created, count: created.length }, { status: 201 });
   } catch {
-    // Refund reserved credits on AI failure
+    // AI or model init failed — refund reserved credits
     await db.aiCreditBalance
       .update({
         where: { userId: user.id },
         data: { credits: { increment: 2 } },
       })
       .catch(() => {});
-    return NextResponse.json({ error: "AI generation failed" }, { status: 500 });
+    return NextResponse.json({ error: "AI service unavailable" }, { status: 503 });
   }
 }

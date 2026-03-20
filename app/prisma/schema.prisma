@@ -43,6 +43,12 @@ model User {
   aiPreference      AiPreference?
   flashcardDecks    FlashcardDeck[]
   flashcardReviews  FlashcardReview[]
+  quizzes           Quiz[]
+  studySessions     StudySession[]
+  groupMemberships   GroupMember[]
+  sharedAnnotations  SharedAnnotation[]
+  groupDiscussions   GroupDiscussion[]
+  concepts           Concept[]
 
   @@map("users")
 }
@@ -111,7 +117,8 @@ model Course {
   bookmarks  Bookmark[]
   highlights Highlight[]
   streaks    ReadingStreak[]
-  sessions   ReadingSession[]
+  sessions       ReadingSession[]
+  contentSources ContentSource[]
 
   @@map("courses")
 }
@@ -491,4 +498,162 @@ model FlashcardReview {
   @@index([cardId])
   @@index([userId, reviewedAt])
   @@map("flashcard_reviews")
+}
+
+// ─── Quiz & Study Sessions ────────────────────────────────────────────────────
+
+model Quiz {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  courseId  String   @map("course_id")
+  chapterId String   @map("chapter_id")
+  questions String
+  score     Int?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, chapterId])
+  @@map("quizzes")
+}
+
+model StudySession {
+  id           String    @id @default(cuid())
+  userId       String    @map("user_id")
+  courseId     String    @map("course_id")
+  chapterId    String    @map("chapter_id")
+  exchanges    String    @default("[]")
+  overallScore Int?      @map("overall_score")
+  weakAreas    String?   @map("weak_areas")
+  completedAt  DateTime? @map("completed_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("ai_study_sessions")
+}
+
+// ─── Content Sources ──────────────────────────────────────────────────────────
+
+model ContentSource {
+  id          String   @id @default(cuid())
+  courseId    String   @map("course_id")
+  sourceType  String   @map("source_type")
+  originalUrl String?  @map("original_url")
+  filePath    String?  @map("file_path")
+  fileSize    Int?     @map("file_size")
+  mimeType    String?  @map("mime_type")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+  @@map("content_sources")
+}
+
+// ─── Study Groups ─────────────────────────────────────────────────────────────
+
+model StudyGroup {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  courseId    String   @map("course_id")
+  createdBy   String   @map("created_by")
+  inviteCode  String   @unique @map("invite_code")
+  isPublic    Boolean  @default(false) @map("is_public")
+  maxMembers  Int      @default(20) @map("max_members")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  members     GroupMember[]
+  discussions GroupDiscussion[]
+  annotations SharedAnnotation[]
+
+  @@index([courseId])
+  @@index([createdBy])
+  @@map("study_groups")
+}
+
+model GroupMember {
+  id       String   @id @default(cuid())
+  groupId  String   @map("group_id")
+  userId   String   @map("user_id")
+  role     String   @default("MEMBER")
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  group StudyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([userId])
+  @@map("group_members")
+}
+
+model SharedAnnotation {
+  id        String   @id @default(cuid())
+  groupId   String   @map("group_id")
+  userId    String   @map("user_id")
+  chapterId String   @map("chapter_id")
+  type      String
+  sourceId  String   @map("source_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  group StudyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, chapterId])
+  @@map("shared_annotations")
+}
+
+model GroupDiscussion {
+  id        String   @id @default(cuid())
+  groupId   String   @map("group_id")
+  userId    String   @map("user_id")
+  chapterId String   @map("chapter_id")
+  parentId  String?  @map("parent_id")
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  group   StudyGroup        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  GroupDiscussion?  @relation("Replies", fields: [parentId], references: [id])
+  replies GroupDiscussion[] @relation("Replies")
+
+  @@index([groupId, chapterId])
+  @@index([parentId])
+  @@map("group_discussions")
+}
+
+// ─── Knowledge Graph ──────────────────────────────────────────────────────────
+
+model Concept {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  links ConceptLink[]
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@map("concepts")
+}
+
+model ConceptLink {
+  id         String @id @default(cuid())
+  conceptId  String @map("concept_id")
+  sourceType String @map("source_type")
+  sourceId   String @map("source_id")
+  chapterId  String @map("chapter_id")
+  courseId   String @map("course_id")
+
+  concept Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+
+  @@unique([conceptId, sourceType, sourceId])
+  @@index([conceptId])
+  @@index([sourceType, sourceId])
+  @@map("concept_links")
 }
