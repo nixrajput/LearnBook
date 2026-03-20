@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Search, Menu, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
@@ -26,11 +27,41 @@ interface TopNavProps {
   };
 }
 
+/** Map pathname → i18n key (namespace.key) */
+const PAGE_TITLE_KEYS: Record<string, [string, string]> = {
+  "/dashboard": ["nav", "dashboard"],
+  "/courses": ["nav", "courses"],
+  "/library": ["nav", "library"],
+  "/notes": ["nav", "notes"],
+  "/bookmarks": ["nav", "bookmarks"],
+  "/flashcards": ["nav", "flashcards"],
+  "/groups": ["nav", "groups"],
+  "/knowledge": ["nav", "knowledge"],
+  "/credits": ["nav", "aiCredits"],
+  "/settings": ["nav", "settings"],
+  "/profile": ["nav", "profile"],
+  "/admin": ["admin", "overview"],
+  "/admin/analytics": ["admin", "analytics"],
+  "/admin/users": ["admin", "users"],
+  "/admin/courses": ["admin", "courses"],
+  "/admin/plans": ["admin", "plans"],
+  "/admin/credit-packs": ["nav", "creditPacks"],
+  "/admin/offers": ["admin", "offers"],
+};
+
 export function TopNav({ onMenuClick, user, showLogo }: TopNavProps) {
   const pathname = usePathname();
   const setSearchOpen = useSearchStore((s) => s.setOpen);
+  const tNav = useTranslations("nav");
+  const tAdmin = useTranslations("admin");
+  const tCommon = useTranslations("common");
 
-  const pageTitle = getPageTitle(pathname);
+  const titleEntry = PAGE_TITLE_KEYS[pathname];
+  const pageTitle = titleEntry
+    ? titleEntry[0] === "admin"
+      ? tAdmin(titleEntry[1] as never)
+      : tNav(titleEntry[1] as never)
+    : null;
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -39,7 +70,7 @@ export function TopNav({ onMenuClick, user, showLogo }: TopNavProps) {
           {/* Mobile menu trigger */}
           <Button variant="ghost" size="icon" className="md:hidden" onClick={onMenuClick}>
             <Menu className="h-5 w-5" />
-            <span className="sr-only">Toggle menu</span>
+            <span className="sr-only">{tNav("toggleMenu")}</span>
           </Button>
 
           {/* Logo */}
@@ -51,7 +82,7 @@ export function TopNav({ onMenuClick, user, showLogo }: TopNavProps) {
             )}
           >
             <BookOpen className="h-5 w-5 text-primary" />
-            <span className="text-sm">LearnBook</span>
+            <span className="text-sm">{tCommon("appName")}</span>
           </Link>
 
           {/* Page title (desktop only) */}
@@ -69,7 +100,7 @@ export function TopNav({ onMenuClick, user, showLogo }: TopNavProps) {
               onClick={() => setSearchOpen(true)}
             >
               <Search className="h-3.5 w-3.5" />
-              <span className="text-xs">Search</span>
+              <span className="text-xs">{tNav("search")}</span>
               <kbd className="pointer-events-none hidden h-5 select-none items-center rounded border bg-muted px-1.5 font-mono text-[10px] font-medium sm:flex">
                 ⌘K
               </kbd>
@@ -87,15 +118,15 @@ export function TopNav({ onMenuClick, user, showLogo }: TopNavProps) {
                   <Search className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Search</TooltipContent>
+              <TooltipContent>{tNav("search")}</TooltipContent>
             </Tooltip>
+
+            {/* Credits */}
+            <CreditsBadge />
 
             {/* Language + Theme side by side */}
             <LanguageSwitcher currentLanguage={user?.primaryLanguage ?? "en"} />
             <ThemeToggle />
-
-            {/* Credits */}
-            <CreditsBadge />
 
             {/* User menu */}
             {user && <UserMenu user={user} />}
@@ -104,28 +135,4 @@ export function TopNav({ onMenuClick, user, showLogo }: TopNavProps) {
       </header>
     </TooltipProvider>
   );
-}
-
-function getPageTitle(pathname: string): string | null {
-  const titles: Record<string, string> = {
-    "/dashboard": "Dashboard",
-    "/courses": "Courses",
-    "/library": "Library",
-    "/notes": "Notes",
-    "/bookmarks": "Bookmarks",
-    "/flashcards": "Flashcards",
-    "/groups": "Study Groups",
-    "/knowledge": "Knowledge Graph",
-    "/credits": "AI Credits",
-    "/settings": "Settings",
-    "/profile": "Profile",
-    "/admin": "Admin Overview",
-    "/admin/analytics": "Analytics",
-    "/admin/users": "Users",
-    "/admin/courses": "Courses",
-    "/admin/plans": "Plans",
-    "/admin/credit-packs": "Credit Packs",
-    "/admin/offers": "Offers",
-  };
-  return titles[pathname] ?? null;
 }

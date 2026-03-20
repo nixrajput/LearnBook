@@ -64,8 +64,18 @@
     "profile": "प्रोफाइल",
     "review": "दैनिक समीक्षा",
     "toggleTheme": "थीम बदलें",
+    "toggleMenu": "मेनू टॉगल करें",
     "expand": "विस्तार करें",
-    "collapse": "संक्षिप्त करें"
+    "collapse": "संक्षिप्त करें",
+    "main": "मुख्य",
+    "study": "अध्ययन",
+    "explore": "अन्वेषण",
+    "manage": "प्रबंधन",
+    "billing": "बिलिंग",
+    "language": "भाषा",
+    "search": "खोजें",
+    "creditPacks": "क्रेडिट पैक्स",
+    "overview": "अवलोकन"
   },
   "footer": {
     "pricing": "मूल्य",
@@ -441,7 +451,16 @@
     "deleteConfirmDescription": "पुष्टि करने के लिए {keyword} टाइप करें।",
     "deleteConfirmPlaceholder": "पुष्टि के लिए delete टाइप करें",
     "permanentlyDelete": "खाता स्थायी रूप से हटाएं",
-    "memberSince": "{date} से सदस्य"
+    "memberSince": "{date} से सदस्य",
+    "planUsage": "योजना और उपयोग",
+    "planUsageDescription": "अपनी सदस्यता प्रबंधित करें और संसाधन उपयोग देखें।",
+    "resourceUsage": "संसाधन उपयोग",
+    "freeForever": "हमेशा मुफ्त",
+    "perMonth": "/माह",
+    "renews": "नवीनीकरण {date}",
+    "comparePlans": "योजनाओं की तुलना करें",
+    "manageSubscription": "सदस्यता प्रबंधित करें",
+    "unlimitedResources": "आपकी योजना पर सभी संसाधन असीमित हैं।"
   },
   "settings": {
     "title": "सेटिंग्स",
@@ -485,6 +504,7 @@
     "upload": "अपलोड",
     "offers": "ऑफ़र",
     "plans": "योजनाएं",
+    "creditPacks": "क्रेडिट पैक्स",
     "platformOverview": "प्लेटफ़ॉर्म अवलोकन",
     "platformHealthDesc": "प्लेटफ़ॉर्म स्वास्थ्य एक नज़र में",
     "platformAnalytics": "प्लेटफ़ॉर्म विश्लेषण",

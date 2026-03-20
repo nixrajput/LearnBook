@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import type { ChapterNavItem } from "@/types/content";
 
 interface ChapterNavProps {
@@ -7,7 +8,10 @@ interface ChapterNavProps {
   next: ChapterNavItem | null;
 }
 
-export function ChapterNav({ prev, next }: ChapterNavProps) {
+export async function ChapterNav({ prev, next }: ChapterNavProps) {
+  const t = await getTranslations("common");
+  const tReader = await getTranslations("reader");
+
   return (
     <nav className="stagger-2 mt-12 animate-slide-up border-t pt-6">
       <div className="grid grid-cols-2 gap-3">
@@ -20,10 +24,10 @@ export function ChapterNav({ prev, next }: ChapterNavProps) {
             <ChevronLeft className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:-translate-x-0.5" />
             <div className="min-w-0">
               <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                Previous
+                {t("previous")}
               </div>
               <div className="truncate text-sm font-medium group-hover:text-primary">
-                Ch. {prev.number} — {prev.title}
+                {tReader("chapter", { num: prev.number, title: prev.title })}
               </div>
             </div>
           </Link>
@@ -39,10 +43,10 @@ export function ChapterNav({ prev, next }: ChapterNavProps) {
           >
             <div className="min-w-0 text-right">
               <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                Next
+                {t("next")}
               </div>
               <div className="truncate text-sm font-medium group-hover:text-primary">
-                Ch. {next.number} — {next.title}
+                {tReader("chapter", { num: next.number, title: next.title })}
               </div>
             </div>
             <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />

@@ -2,6 +2,7 @@
 
 import { signOut } from "next-auth/react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { User, Settings, LogOut, Shield, Sparkles } from "lucide-react";
 import {
   DropdownMenu,
@@ -46,6 +47,8 @@ const PLAN_COLORS: Record<string, string> = {
 };
 
 export function UserMenu({ user }: UserMenuProps) {
+  const t = useTranslations("nav");
+  const tCommon = useTranslations("common");
   const initials = getInitials(user.name, user.email);
   const plan = user.plan ?? "FREE";
 
@@ -54,7 +57,7 @@ export function UserMenu({ user }: UserMenuProps) {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={user.image ?? undefined} alt={user.name ?? "User"} />
+            <AvatarImage src={user.image ?? undefined} alt={user.name ?? tCommon("user")} />
             <AvatarFallback className="text-xs">{initials}</AvatarFallback>
           </Avatar>
         </Button>
@@ -64,7 +67,7 @@ export function UserMenu({ user }: UserMenuProps) {
           <div className="flex flex-col space-y-1">
             <div className="flex items-center gap-2">
               <p className="text-sm font-medium leading-none">
-                {user.displayName ?? user.name ?? "User"}
+                {user.displayName ?? user.name ?? tCommon("user")}
               </p>
               <Badge
                 className={`px-1.5 py-0 text-[10px] font-medium ${PLAN_COLORS[plan] ?? PLAN_COLORS.FREE}`}
@@ -80,20 +83,20 @@ export function UserMenu({ user }: UserMenuProps) {
           <DropdownMenuItem asChild>
             <Link href="/profile" className="cursor-pointer">
               <User className="mr-2 h-4 w-4" />
-              Profile
+              {t("profile")}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/settings" className="cursor-pointer">
               <Settings className="mr-2 h-4 w-4" />
-              Settings
+              {t("settings")}
             </Link>
           </DropdownMenuItem>
           {user.role === "ADMIN" && (
             <DropdownMenuItem asChild>
               <Link href="/admin" className="cursor-pointer">
                 <Shield className="mr-2 h-4 w-4" />
-                Admin
+                {tCommon("admin")}
               </Link>
             </DropdownMenuItem>
           )}
@@ -107,7 +110,7 @@ export function UserMenu({ user }: UserMenuProps) {
                 className="cursor-pointer font-medium text-primary focus:text-primary"
               >
                 <Sparkles className="mr-2 h-4 w-4" />
-                Upgrade Plan
+                {tCommon("upgradePlan")}
               </Link>
             </DropdownMenuItem>
           </>
@@ -118,7 +121,7 @@ export function UserMenu({ user }: UserMenuProps) {
           onClick={() => signOut({ callbackUrl: "/" })}
         >
           <LogOut className="mr-2 h-4 w-4" />
-          Log out
+          {tCommon("logOut")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

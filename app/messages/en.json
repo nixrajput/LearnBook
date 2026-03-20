@@ -64,8 +64,18 @@
     "profile": "Profile",
     "review": "Daily Review",
     "toggleTheme": "Toggle theme",
+    "toggleMenu": "Toggle menu",
     "expand": "Expand",
-    "collapse": "Collapse"
+    "collapse": "Collapse",
+    "main": "Main",
+    "study": "Study",
+    "explore": "Explore",
+    "manage": "Manage",
+    "billing": "Billing",
+    "language": "Language",
+    "search": "Search",
+    "creditPacks": "Credit Packs",
+    "overview": "Overview"
   },
   "footer": {
     "pricing": "Pricing",
@@ -441,7 +451,16 @@
     "deleteConfirmDescription": "Type {keyword} to confirm.",
     "deleteConfirmPlaceholder": "Type delete to confirm",
     "permanentlyDelete": "Permanently delete account",
-    "memberSince": "Member since {date}"
+    "memberSince": "Member since {date}",
+    "planUsage": "Plan & Usage",
+    "planUsageDescription": "Manage your subscription and view resource usage.",
+    "resourceUsage": "Resource Usage",
+    "freeForever": "Free forever",
+    "perMonth": "/month",
+    "renews": "Renews {date}",
+    "comparePlans": "Compare plans",
+    "manageSubscription": "Manage Subscription",
+    "unlimitedResources": "All resources are unlimited on your plan."
   },
   "settings": {
     "title": "Settings",
@@ -485,6 +504,7 @@
     "upload": "Upload",
     "offers": "Offers",
     "plans": "Plans",
+    "creditPacks": "Credit Packs",
     "platformOverview": "Platform Overview",
     "platformHealthDesc": "Platform health at a glance",
     "platformAnalytics": "Platform Analytics",

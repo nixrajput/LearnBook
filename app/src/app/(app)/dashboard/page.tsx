@@ -16,6 +16,7 @@ import {
   Settings,
   Calendar,
 } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { db } from "@/lib/db";
 import { getActiveCourseId } from "@/lib/content/parser";
 import { getReadingSpeedStats, getFocusInsights, getCompletionForecast } from "@/lib/content";
@@ -130,8 +131,16 @@ async function getActiveCourseData(userId: string, courseId: string) {
     dayBuckets[day] += s.minutesRead;
   }
   const maxDayIdx = dayBuckets.indexOf(Math.max(...dayBuckets));
-  const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-  const mostActiveDay = dayBuckets[maxDayIdx] > 0 ? DAY_NAMES[maxDayIdx] : null;
+  const DAY_KEYS = [
+    "daysSunday",
+    "daysMonday",
+    "daysTuesday",
+    "daysWednesday",
+    "daysThursday",
+    "daysFriday",
+    "daysSaturday",
+  ] as const;
+  const mostActiveDayKey = dayBuckets[maxDayIdx] > 0 ? DAY_KEYS[maxDayIdx] : null;
 
   // Longest streak ever
   let longestStreak = 0;
@@ -183,7 +192,7 @@ async function getActiveCourseData(userId: string, courseId: string) {
     heatmapDays,
     last7Chapters,
     velocityTrend,
-    mostActiveDay,
+    mostActiveDayKey,
     dayBuckets,
     avgSessionMin,
     thisWeekMin,
@@ -197,6 +206,8 @@ export default async function HomePage() {
   const plan = user.plan ?? "FREE";
   const isPro = plan === "PRO" || plan === "PREMIUM";
   const isPremium = plan === "PREMIUM";
+  const t = await getTranslations("dashboard");
+  const tCommon = await getTranslations("common");
 
   const [data, activeCourse, goal, speedStats, focusData, forecast] = await Promise.all([
     getActiveCourseData(user.id, courseId),
@@ -221,10 +232,10 @@ export default async function HomePage() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       {/* ── Header ────────────────────────────────────────────────────────────── */}
       <div className="mb-8 animate-slide-down">
-        <h1 className="mb-1 text-3xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="mb-1 text-3xl font-bold tracking-tight">{t("title")}</h1>
         {activeCourse && (
           <p className="text-muted-foreground">
-            Active course:{" "}
+            {t("activeCourse")}{" "}
             <Link
               href={`/courses/${courseId}`}
               className="font-medium text-foreground hover:underline"
@@ -246,14 +257,16 @@ export default async function HomePage() {
               <BookOpen className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <p className="mb-0.5 text-xs font-medium text-muted-foreground">Continue reading</p>
+              <p className="mb-0.5 text-xs font-medium text-muted-foreground">
+                {t("continueReading")}
+              </p>
               <h2 className="font-semibold leading-snug group-hover:text-primary">
                 Ch. {data.lastReadChapter.number} — {data.lastReadChapter.title}
               </h2>
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-1.5 text-sm font-medium text-primary">
-            Resume{" "}
+            {t("resume")}{" "}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </div>
         </Link>
@@ -264,33 +277,33 @@ export default async function HomePage() {
         <StatCard
           icon={<CheckCircle2 className="h-4 w-4 text-emerald-500" />}
           iconBg="bg-emerald-500/10"
-          label="Completed"
+          label={t("completed")}
           value={`${data.completedCount}/${data.totalChapters}`}
-          sub={`${data.completionPct}% done`}
+          sub={`${data.completionPct}${t("percentDone")}`}
           delay="stagger-1"
         />
         <StatCard
           icon={<Circle className="h-4 w-4 text-blue-500" />}
           iconBg="bg-blue-500/10"
-          label="In progress"
+          label={t("inProgress")}
           value={String(data.inProgressCount)}
-          sub="chapters"
+          sub={t("chapters")}
           delay="stagger-2"
         />
         <StatCard
           icon={<Flame className="h-4 w-4 text-orange-500" />}
           iconBg="bg-orange-500/10"
-          label="Current streak"
+          label={t("currentStreak")}
           value={`${data.currentStreak}d`}
-          sub={`${data.longestStreak}d best`}
+          sub={`${data.longestStreak}${t("dBest")}`}
           delay="stagger-3"
         />
         <StatCard
           icon={<StickyNote className="h-4 w-4 text-amber-500" />}
           iconBg="bg-amber-500/10"
-          label="Notes"
+          label={t("notes")}
           value={String(data.notesCount)}
-          sub={`${data.bookmarksCount} bookmarks`}
+          sub={`${data.bookmarksCount} ${t("bookmarks")}`}
           delay="stagger-4"
         />
       </div>
@@ -303,13 +316,13 @@ export default async function HomePage() {
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10">
               <TrendingUp className="h-3.5 w-3.5 text-primary" />
             </div>
-            <h3 className="font-semibold">Course Progress</h3>
+            <h3 className="font-semibold">{t("courseProgress")}</h3>
           </div>
           <Link
             href={`/courses/${courseId}`}
             className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
           >
-            View course <ArrowRight className="h-3 w-3" />
+            {t("viewCourse")} <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
 
@@ -317,7 +330,7 @@ export default async function HomePage() {
           {/* Overall progress */}
           <div className="mb-6 rounded-lg bg-muted/40 p-4">
             <div className="mb-3 flex items-center justify-between">
-              <span className="text-sm font-medium">Overall completion</span>
+              <span className="text-sm font-medium">{t("overallCompletion")}</span>
               <span className="text-2xl font-bold tabular-nums text-indigo-600 dark:text-indigo-400">
                 {data.completionPct}%
               </span>
@@ -330,23 +343,26 @@ export default async function HomePage() {
             </div>
             <div className="mt-2 flex justify-between text-xs text-muted-foreground">
               <span>
-                {data.completedCount} of {data.totalChapters} chapters complete
+                {t("chaptersComplete", {
+                  completed: data.completedCount,
+                  total: data.totalChapters,
+                })}
               </span>
-              <span>{data.totalChapters - data.completedCount} remaining</span>
+              <span>{t("remaining", { count: data.totalChapters - data.completedCount })}</span>
             </div>
           </div>
 
           {/* Per-part breakdown */}
           <div className="space-y-3">
             <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              By part
+              {t("byPart")}
             </div>
             {data.partProgress.map((p) => {
               const pct = p.total > 0 ? Math.round((p.completed / p.total) * 100) : 0;
               return (
                 <div key={p.partNumber} className="flex items-center gap-3">
                   <span className="w-14 shrink-0 font-mono text-[11px] text-muted-foreground">
-                    Part {p.romanNumeral}
+                    {t("part", { num: p.romanNumeral })}
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="mb-1 flex items-center justify-between gap-2">
@@ -377,7 +393,7 @@ export default async function HomePage() {
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-violet-500/10">
             <BarChart3 className="h-3.5 w-3.5 text-violet-500" />
           </div>
-          <h3 className="font-semibold">Reading Analytics</h3>
+          <h3 className="font-semibold">{t("readingAnalytics")}</h3>
         </div>
       </div>
 
@@ -385,32 +401,32 @@ export default async function HomePage() {
         <AnalyticCard
           icon={<Timer className="h-4 w-4 text-violet-500" />}
           iconBg="bg-violet-500/10"
-          label="Total time"
+          label={t("totalTime")}
           value={totalReadingLabel || "0m"}
-          sub="all time"
+          sub={t("allTime")}
           delay="stagger-1"
         />
         <AnalyticCard
           icon={<Calendar className="h-4 w-4 text-sky-500" />}
           iconBg="bg-sky-500/10"
-          label="This week"
+          label={t("thisWeek")}
           value={thisWeekLabel || "0m"}
-          sub={`${data.last7Chapters} ch completed`}
+          sub={`${data.last7Chapters} ${t("chCompleted")}`}
           delay="stagger-2"
         />
         <AnalyticCard
           icon={<Zap className="h-4 w-4 text-amber-500" />}
           iconBg="bg-amber-500/10"
-          label="Velocity"
+          label={t("velocity")}
           value={`${data.last7Chapters} ch`}
           sub={
             data.velocityTrend === null
-              ? "vs last week"
+              ? t("vsLastWeek")
               : data.velocityTrend > 0
-                ? `↑ ${data.velocityTrend} vs last week`
+                ? t("upVsLastWeek", { count: data.velocityTrend })
                 : data.velocityTrend < 0
-                  ? `↓ ${Math.abs(data.velocityTrend)} vs last week`
-                  : "same as last week"
+                  ? t("downVsLastWeek", { count: Math.abs(data.velocityTrend) })
+                  : t("sameAsLastWeek")
           }
           subColor={
             data.velocityTrend == null
@@ -426,9 +442,13 @@ export default async function HomePage() {
         <AnalyticCard
           icon={<Target className="h-4 w-4 text-rose-500" />}
           iconBg="bg-rose-500/10"
-          label="Avg session"
+          label={t("avgSession")}
           value={data.avgSessionMin > 0 ? `${data.avgSessionMin}m` : "—"}
-          sub={data.mostActiveDay ? `Best: ${data.mostActiveDay.slice(0, 3)}` : "no data yet"}
+          sub={
+            data.mostActiveDayKey
+              ? t("bestDay", { day: t(data.mostActiveDayKey).slice(0, 3) })
+              : tCommon("noDataYet")
+          }
           delay="stagger-4"
         />
       </div>
@@ -440,17 +460,27 @@ export default async function HomePage() {
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10">
               <BarChart3 className="h-3.5 w-3.5 text-primary" />
             </div>
-            <h3 className="font-semibold">Reading Activity</h3>
+            <h3 className="font-semibold">{t("readingActivity")}</h3>
           </div>
-          <span className="text-xs text-muted-foreground">Last 28 days</span>
+          <span className="text-xs text-muted-foreground">{t("last28Days")}</span>
         </div>
 
         <div className="p-6">
           {/* Day-of-week labels */}
           <div className="mb-2 grid grid-cols-7 gap-1.5 px-0">
-            {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
-              <div key={d} className="text-center text-[10px] font-medium text-muted-foreground">
-                {d}
+            {(
+              [
+                "daysShortMon",
+                "daysShortTue",
+                "daysShortWed",
+                "daysShortThu",
+                "daysShortFri",
+                "daysShortSat",
+                "daysShortSun",
+              ] as const
+            ).map((key) => (
+              <div key={key} className="text-center text-[10px] font-medium text-muted-foreground">
+                {t(key)}
               </div>
             ))}
           </div>
@@ -476,7 +506,7 @@ export default async function HomePage() {
 
           {/* Legend */}
           <div className="mt-3 flex items-center justify-end gap-1.5 text-[10px] text-muted-foreground">
-            <span>Less</span>
+            <span>{t("less")}</span>
             {[
               "bg-secondary",
               "bg-indigo-200 dark:bg-indigo-900",
@@ -485,20 +515,29 @@ export default async function HomePage() {
             ].map((cls, i) => (
               <div key={i} className={`h-3 w-3 rounded-sm ${cls}`} />
             ))}
-            <span>More</span>
+            <span>{t("more")}</span>
           </div>
 
           {/* Weekly bar chart */}
           {data.dayBuckets.some((v) => v > 0) && (
             <div className="mt-6 border-t pt-5">
               <p className="mb-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Minutes by day of week
+                {t("minutesByDay")}
               </p>
               <div className="flex h-20 items-end gap-1.5">
                 {data.dayBuckets.map((mins, i) => {
                   const maxMins = Math.max(...data.dayBuckets, 1);
                   const heightPct = Math.max(Math.round((mins / maxMins) * 100), mins > 0 ? 4 : 0);
-                  const dayLabel = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"][i];
+                  const dayKeys = [
+                    "daysMiniSu",
+                    "daysMiniMo",
+                    "daysMiniTu",
+                    "daysMiniWe",
+                    "daysMiniTh",
+                    "daysMiniFr",
+                    "daysMiniSa",
+                  ] as const;
+                  const dayLabel = t(dayKeys[i]);
                   const isMax = mins === Math.max(...data.dayBuckets) && mins > 0;
                   return (
                     <div key={i} className="flex flex-1 flex-col items-center gap-1.5">
@@ -542,7 +581,7 @@ export default async function HomePage() {
 
       {/* ── Premium Analytics ──────────────────────────────────────────────────── */}
       <div className="mb-8">
-        <FeatureGate currentPlan={plan} requiredPlan="PREMIUM" feature="Advanced Analytics">
+        <FeatureGate currentPlan={plan} requiredPlan="PREMIUM" feature={t("advancedAnalytics")}>
           {isPremium ? (
             <div className="grid gap-6 p-6 md:grid-cols-2">
               {speedStats && <SpeedTrendChart stats={speedStats} />}
@@ -562,21 +601,21 @@ export default async function HomePage() {
           <div className="flex items-center justify-between border-b px-5 py-4">
             <h3 className="flex items-center gap-2 text-sm font-semibold">
               <StickyNote className="h-4 w-4 text-amber-500" />
-              Recent Notes
+              {t("recentNotes")}
             </h3>
             <Link
               href="/notes"
               className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
             >
-              View all <ArrowRight className="h-3 w-3" />
+              {tCommon("viewAll")} <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
           <div className="p-5">
             {data.recentNotes.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-6 text-center">
                 <StickyNote className="mb-2 h-8 w-8 text-muted-foreground/30" />
-                <p className="text-sm text-muted-foreground">No notes yet.</p>
-                <p className="text-xs text-muted-foreground/70">Start reading and take notes!</p>
+                <p className="text-sm text-muted-foreground">{t("noNotesYet")}</p>
+                <p className="text-xs text-muted-foreground/70">{t("startReadingNotes")}</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -602,36 +641,36 @@ export default async function HomePage() {
         {/* Quick links */}
         <div className="stagger-5 animate-slide-up rounded-xl border bg-card">
           <div className="border-b px-5 py-4">
-            <h3 className="text-sm font-semibold">Quick Access</h3>
+            <h3 className="text-sm font-semibold">{t("quickAccess")}</h3>
           </div>
           <div className="p-3">
             <QuickLink
               href={`/courses/${courseId}`}
               icon={<BookOpen className="h-4 w-4 text-primary" />}
               iconBg="bg-primary/10"
-              label="Active course"
-              sub={`${data.totalChapters} chapters · ${data.completionPct}% done`}
+              label={t("activeCourseLink")}
+              sub={`${data.totalChapters} ${t("chapters")} · ${data.completionPct}${t("percentDone")}`}
             />
             <QuickLink
               href="/notes"
               icon={<StickyNote className="h-4 w-4 text-amber-500" />}
               iconBg="bg-amber-500/10"
-              label="My notes"
-              sub={`${data.notesCount} total notes`}
+              label={t("myNotes")}
+              sub={t("totalNotes", { count: data.notesCount })}
             />
             <QuickLink
               href="/bookmarks"
               icon={<Bookmark className="h-4 w-4 text-blue-500" />}
               iconBg="bg-blue-500/10"
-              label="Bookmarks"
-              sub={`${data.bookmarksCount} saved`}
+              label={t("bookmarks")}
+              sub={t("savedBookmarks", { count: data.bookmarksCount })}
             />
             <QuickLink
               href="/settings"
               icon={<Settings className="h-4 w-4 text-muted-foreground" />}
               iconBg="bg-muted/60"
-              label="Reader settings"
-              sub="Font, size, theme"
+              label={t("readerSettings")}
+              sub={t("fontSizeTheme")}
             />
           </div>
         </div>

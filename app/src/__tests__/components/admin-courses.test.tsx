@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { IntlWrapper } from "../test-intl-wrapper";
 // jest-dom matchers loaded via setup-dom.ts
 
 vi.mock("next/navigation", () => ({
@@ -41,33 +42,33 @@ const mockCourses = [
 
 describe("AdminCourseTable", () => {
   it("renders empty state when no courses", () => {
-    render(<AdminCourseTable courses={[]} />);
+    render(<AdminCourseTable courses={[]} />, { wrapper: IntlWrapper });
     expect(screen.getByText("No courses yet. Upload one to get started.")).toBeInTheDocument();
   });
 
   it("renders course rows", () => {
-    render(<AdminCourseTable courses={mockCourses} />);
+    render(<AdminCourseTable courses={mockCourses} />, { wrapper: IntlWrapper });
     expect(screen.getByText("Backend Engineering")).toBeInTheDocument();
     expect(screen.getByText("Frontend Masters")).toBeInTheDocument();
   });
 
   it("shows Published badge for published courses", () => {
-    render(<AdminCourseTable courses={mockCourses} />);
+    render(<AdminCourseTable courses={mockCourses} />, { wrapper: IntlWrapper });
     expect(screen.getByText("Published")).toBeInTheDocument();
   });
 
   it("shows Draft badge for unpublished courses", () => {
-    render(<AdminCourseTable courses={mockCourses} />);
+    render(<AdminCourseTable courses={mockCourses} />, { wrapper: IntlWrapper });
     expect(screen.getByText("Draft")).toBeInTheDocument();
   });
 
   it("shows collection ID", () => {
-    render(<AdminCourseTable courses={mockCourses} />);
+    render(<AdminCourseTable courses={mockCourses} />, { wrapper: IntlWrapper });
     expect(screen.getByText("backend-eng")).toBeInTheDocument();
   });
 
   it("shows content stats in compact format", () => {
-    render(<AdminCourseTable courses={mockCourses} />);
+    render(<AdminCourseTable courses={mockCourses} />, { wrapper: IntlWrapper });
     // Content column shows "9p · 27ch · 12n" format
     expect(screen.getByText("9p · 27ch · 12n")).toBeInTheDocument();
     expect(screen.getByText("5p · 15ch · 0n")).toBeInTheDocument();

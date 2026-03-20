@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, CreditCard, Sparkles } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth/session";
 import { getPlanLimits, formatPrice, getAllPlans } from "@/lib/plans";
@@ -43,6 +44,8 @@ export default async function ProfilePage() {
 
   if (!user) return null;
 
+  const t = await getTranslations("profile");
+  const tCommon = await getTranslations("common");
   const plans = await getAllPlans();
   const currentPlanInfo = plans.find((p) => p.planKey === (user.plan ?? "FREE"));
   const limits = await getPlanLimits(user.plan ?? "FREE");
@@ -65,7 +68,7 @@ export default async function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="mb-8 text-3xl font-bold tracking-tight">Profile</h1>
+      <h1 className="mb-8 text-3xl font-bold tracking-tight">{t("title")}</h1>
 
       {/* Avatar + identity (read-only from OAuth) */}
       <section className="mb-8">
@@ -88,7 +91,9 @@ export default async function ProfilePage() {
             </div>
             <p className="text-sm text-muted-foreground">{user.email}</p>
             <p className="text-xs text-muted-foreground">
-              Member since {new Date(user.createdAt).toLocaleDateString(user.locale ?? "en-US")}
+              {t("memberSince", {
+                date: new Date(user.createdAt).toLocaleDateString(user.locale ?? "en-US"),
+              })}
             </p>
           </div>
         </div>
@@ -98,10 +103,8 @@ export default async function ProfilePage() {
 
       {/* Editable profile fields */}
       <section className="mb-8">
-        <h2 className="mb-1 text-lg font-semibold">Edit Profile</h2>
-        <p className="mb-4 text-sm text-muted-foreground">
-          Update your display name and bio. Your avatar and email come from your OAuth provider.
-        </p>
+        <h2 className="mb-1 text-lg font-semibold">{t("editProfile")}</h2>
+        <p className="mb-4 text-sm text-muted-foreground">{t("editDescription")}</p>
         <ProfileForm
           initialDisplayName={user.displayName ?? user.name ?? ""}
           initialBio={user.bio ?? ""}
@@ -112,10 +115,8 @@ export default async function ProfilePage() {
 
       {/* Plan & Usage */}
       <section className="mb-8">
-        <h2 className="mb-1 text-lg font-semibold">Plan & Usage</h2>
-        <p className="mb-4 text-sm text-muted-foreground">
-          Manage your subscription and view resource usage.
-        </p>
+        <h2 className="mb-1 text-lg font-semibold">{t("planUsage")}</h2>
+        <p className="mb-4 text-sm text-muted-foreground">{t("planUsageDescription")}</p>
 
         <div className="rounded-lg border bg-card">
           {/* Current plan header */}
@@ -133,10 +134,10 @@ export default async function ProfilePage() {
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {plan === "FREE"
-                    ? "Free forever"
-                    : `${formatPrice(currentPlanInfo?.priceMonthly ?? 0, user.locale ?? "en-US")}/month`}
+                    ? t("freeForever")
+                    : `${formatPrice(currentPlanInfo?.priceMonthly ?? 0, user.locale ?? "en-US")}${t("perMonth")}`}
                   {user.planExpiresAt &&
-                    ` · Renews ${new Date(user.planExpiresAt).toLocaleDateString(user.locale ?? "en-US")}`}
+                    ` · ${t("renews", { date: new Date(user.planExpiresAt).toLocaleDateString(user.locale ?? "en-US") })}`}
                 </p>
               </div>
             </div>
@@ -144,11 +145,11 @@ export default async function ProfilePage() {
               <Button asChild size="sm">
                 <Link href="/pricing">
                   <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-                  Upgrade
+                  {tCommon("upgrade")}
                 </Link>
               </Button>
             ) : (
-              <ManageSubscriptionButton />
+              <ManageSubscriptionButton label={t("manageSubscription")} />
             )}
           </div>
 
@@ -158,7 +159,7 @@ export default async function ProfilePage() {
             limits.maxHighlights !== -1) && (
             <div className="px-5 py-4">
               <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Resource Usage
+                {t("resourceUsage")}
               </p>
               <div className="space-y-3">
                 {limits.maxNotes !== -1 && (
@@ -184,7 +185,7 @@ export default async function ProfilePage() {
                   href="/pricing"
                   className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
                 >
-                  Compare plans <ArrowRight className="h-3 w-3" />
+                  {t("comparePlans")} <ArrowRight className="h-3 w-3" />
                 </Link>
               </div>
             </div>
@@ -192,9 +193,7 @@ export default async function ProfilePage() {
 
           {/* Unlimited message for paid users */}
           {limits.maxNotes === -1 && limits.maxBookmarks === -1 && limits.maxHighlights === -1 && (
-            <div className="px-5 py-4 text-sm text-muted-foreground">
-              All resources are unlimited on your plan.
-            </div>
+            <div className="px-5 py-4 text-sm text-muted-foreground">{t("unlimitedResources")}</div>
           )}
         </div>
       </section>
@@ -203,11 +202,8 @@ export default async function ProfilePage() {
 
       {/* Active sessions */}
       <section className="mb-8">
-        <h2 className="mb-1 text-lg font-semibold">Active Sessions</h2>
-        <p className="mb-4 text-sm text-muted-foreground">
-          Manage your active login sessions. Revoking a session will require re-authentication on
-          that device.
-        </p>
+        <h2 className="mb-1 text-lg font-semibold">{t("activeSessions")}</h2>
+        <p className="mb-4 text-sm text-muted-foreground">{t("sessionsDescription")}</p>
         <ActiveSessions />
       </section>
 
@@ -215,10 +211,8 @@ export default async function ProfilePage() {
 
       {/* Delete account */}
       <section>
-        <h2 className="mb-1 text-lg font-semibold text-destructive">Danger Zone</h2>
-        <p className="mb-4 text-sm text-muted-foreground">
-          Permanently delete your account and all associated data. This action cannot be undone.
-        </p>
+        <h2 className="mb-1 text-lg font-semibold text-destructive">{t("dangerZone")}</h2>
+        <p className="mb-4 text-sm text-muted-foreground">{t("dangerDescription")}</p>
         <DeleteAccountSection />
       </section>
     </div>
@@ -260,11 +254,11 @@ function UsageBar({ label, current, limit }: { label: string; current: number; l
   );
 }
 
-function ManageSubscriptionButton() {
+function ManageSubscriptionButton({ label }: { label: string }) {
   return (
     <form action="/api/stripe/portal" method="POST">
       <Button type="submit" variant="outline" size="sm">
-        Manage Subscription
+        {label}
       </Button>
     </form>
   );

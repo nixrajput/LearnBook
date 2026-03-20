@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { navGroups, adminNavGroups, bottomNavItems } from "@/config/navigation";
 import { cn } from "@/lib/utils/cn";
@@ -24,9 +25,15 @@ function isNavActive(pathname: string, href: string): boolean {
 
 export function MobileNav({ open, onOpenChange, isAdmin }: MobileNavProps) {
   const pathname = usePathname();
-  // Show admin nav only on admin pages, regular nav only on non-admin pages
+  const t = useTranslations("nav");
+  const tAdmin = useTranslations("admin");
+  const tCommon = useTranslations("common");
   const isOnAdminPage = pathname.startsWith("/admin");
   const groups = isOnAdminPage && isAdmin ? adminNavGroups : navGroups;
+  const resolveItemLabel =
+    isOnAdminPage && isAdmin
+      ? (key: string) => tAdmin(key as never)
+      : (key: string) => t(key as never);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -34,14 +41,14 @@ export function MobileNav({ open, onOpenChange, isAdmin }: MobileNavProps) {
         <SheetHeader className="border-b px-4 py-4">
           <SheetTitle className="flex items-center gap-2">
             <BookOpen className="h-5 w-5 text-primary" />
-            LearnBook
+            {tCommon("appName")}
           </SheetTitle>
         </SheetHeader>
         <nav className="flex-1 overflow-y-auto p-3">
           {groups.map((group) => (
             <div key={group.label} className="mb-3">
               <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-                {group.label}
+                {t(group.label as never)}
               </p>
               <div className="space-y-0.5">
                 {group.items.map((item) => (
@@ -57,7 +64,7 @@ export function MobileNav({ open, onOpenChange, isAdmin }: MobileNavProps) {
                     )}
                   >
                     <item.icon className="h-4 w-4" />
-                    {item.label}
+                    {resolveItemLabel(item.label)}
                   </Link>
                 ))}
               </div>
@@ -78,7 +85,7 @@ export function MobileNav({ open, onOpenChange, isAdmin }: MobileNavProps) {
                 )}
               >
                 <item.icon className="h-4 w-4" />
-                {item.label}
+                {t(item.label as never)}
               </Link>
             ))}
           </div>

@@ -27,56 +27,56 @@ export interface NavGroup {
   items: NavItem[];
 }
 
-/** Main navigation groups */
+/** Main navigation groups — label values are i18n keys resolved in components via useTranslations("nav") */
 export const navGroups: NavGroup[] = [
   {
-    label: "Main",
+    label: "main",
     items: [
-      { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-      { label: "Courses", href: "/courses", icon: BookOpen },
-      { label: "Library", href: "/library", icon: Library },
+      { label: "dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { label: "courses", href: "/courses", icon: BookOpen },
+      { label: "library", href: "/library", icon: Library },
     ],
   },
   {
-    label: "Study",
+    label: "study",
     items: [
-      { label: "Notes", href: "/notes", icon: StickyNote },
-      { label: "Bookmarks", href: "/bookmarks", icon: BookMarked },
-      { label: "Flashcards", href: "/flashcards", icon: Layers },
+      { label: "notes", href: "/notes", icon: StickyNote },
+      { label: "bookmarks", href: "/bookmarks", icon: BookMarked },
+      { label: "flashcards", href: "/flashcards", icon: Layers },
     ],
   },
   {
-    label: "Explore",
+    label: "explore",
     items: [
-      { label: "Groups", href: "/groups", icon: Users },
-      { label: "Knowledge", href: "/knowledge", icon: Brain },
-      { label: "AI Credits", href: "/credits", icon: Sparkles },
+      { label: "groups", href: "/groups", icon: Users },
+      { label: "knowledge", href: "/knowledge", icon: Brain },
+      { label: "aiCredits", href: "/credits", icon: Sparkles },
     ],
   },
 ];
 
-/** Admin navigation groups */
+/** Admin navigation groups — label values are i18n keys resolved via useTranslations("admin") */
 export const adminNavGroups: NavGroup[] = [
   {
-    label: "Overview",
+    label: "overview",
     items: [
-      { label: "Dashboard", href: "/admin", icon: Shield },
-      { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
+      { label: "overview", href: "/admin", icon: Shield },
+      { label: "analytics", href: "/admin/analytics", icon: BarChart3 },
     ],
   },
   {
-    label: "Manage",
+    label: "manage",
     items: [
-      { label: "Users", href: "/admin/users", icon: Users },
-      { label: "Courses", href: "/admin/courses", icon: BookOpen },
+      { label: "users", href: "/admin/users", icon: Users },
+      { label: "courses", href: "/admin/courses", icon: BookOpen },
     ],
   },
   {
-    label: "Billing",
+    label: "billing",
     items: [
-      { label: "Plans", href: "/admin/plans", icon: CreditCard },
-      { label: "Credit Packs", href: "/admin/credit-packs", icon: Sparkles },
-      { label: "Offers", href: "/admin/offers", icon: Tag },
+      { label: "plans", href: "/admin/plans", icon: CreditCard },
+      { label: "creditPacks", href: "/admin/credit-packs", icon: Sparkles },
+      { label: "offers", href: "/admin/offers", icon: Tag },
     ],
   },
 ];
@@ -85,7 +85,7 @@ export const adminNavGroups: NavGroup[] = [
 export const allNavItems: NavItem[] = navGroups.flatMap((g) => g.items);
 
 /** Bottom nav items (settings, etc.) */
-export const bottomNavItems: NavItem[] = [{ label: "Settings", href: "/settings", icon: Settings }];
+export const bottomNavItems: NavItem[] = [{ label: "settings", href: "/settings", icon: Settings }];
 
 export const keyboardShortcuts = {
   search: ["Meta+k", "Control+k"],

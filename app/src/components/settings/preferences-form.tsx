@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTheme } from "next-themes";
+import { useTranslations } from "next-intl";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -21,6 +22,8 @@ interface PreferencesFormProps {
 
 export function PreferencesForm({ initialPrefs }: PreferencesFormProps) {
   const { setTheme } = useTheme();
+  const t = useTranslations("settings");
+  const tCommon = useTranslations("common");
   const [prefs, setPrefs] = useState(initialPrefs);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -50,7 +53,7 @@ export function PreferencesForm({ initialPrefs }: PreferencesFormProps) {
     <div className="space-y-6">
       {/* Theme */}
       <div className="space-y-2">
-        <Label>Theme</Label>
+        <Label>{t("theme")}</Label>
         <Select
           value={prefs.theme}
           onValueChange={(v) => updatePref("theme", v as "light" | "dark" | "system")}
@@ -59,9 +62,9 @@ export function PreferencesForm({ initialPrefs }: PreferencesFormProps) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="light">Light</SelectItem>
-            <SelectItem value="dark">Dark</SelectItem>
-            <SelectItem value="system">System</SelectItem>
+            <SelectItem value="light">{t("themeLight")}</SelectItem>
+            <SelectItem value="dark">{t("themeDark")}</SelectItem>
+            <SelectItem value="system">{t("themeSystem")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -69,7 +72,7 @@ export function PreferencesForm({ initialPrefs }: PreferencesFormProps) {
       {/* Font size */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label>Font size</Label>
+          <Label>{t("fontSize")}</Label>
           <span className="text-sm text-muted-foreground">{prefs.fontSize}px</span>
         </div>
         <Slider
@@ -81,14 +84,14 @@ export function PreferencesForm({ initialPrefs }: PreferencesFormProps) {
           className="w-full"
         />
         <div className="flex justify-between text-xs text-muted-foreground">
-          <span>Small</span>
-          <span>Large</span>
+          <span>{t("fontSizeSmall")}</span>
+          <span>{t("fontSizeLarge")}</span>
         </div>
       </div>
 
       {/* Line width */}
       <div className="space-y-2">
-        <Label>Reading width</Label>
+        <Label>{t("readingWidth")}</Label>
         <Select
           value={prefs.lineWidth}
           onValueChange={(v) => updatePref("lineWidth", v as "sm" | "md" | "lg" | "xl")}
@@ -97,17 +100,17 @@ export function PreferencesForm({ initialPrefs }: PreferencesFormProps) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="sm">Narrow (600px)</SelectItem>
-            <SelectItem value="md">Medium (720px)</SelectItem>
-            <SelectItem value="lg">Wide (860px)</SelectItem>
-            <SelectItem value="xl">Full (1000px)</SelectItem>
+            <SelectItem value="sm">{t("widthNarrow")}</SelectItem>
+            <SelectItem value="md">{t("widthMedium")}</SelectItem>
+            <SelectItem value="lg">{t("widthWide")}</SelectItem>
+            <SelectItem value="xl">{t("widthFull")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {/* Font family */}
       <div className="space-y-2">
-        <Label>Font family</Label>
+        <Label>{t("fontFamily")}</Label>
         <Select
           value={prefs.fontFamily}
           onValueChange={(v) => updatePref("fontFamily", v as "sans" | "serif" | "mono")}
@@ -116,9 +119,9 @@ export function PreferencesForm({ initialPrefs }: PreferencesFormProps) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="sans">Sans-serif</SelectItem>
-            <SelectItem value="serif">Serif</SelectItem>
-            <SelectItem value="mono">Monospace</SelectItem>
+            <SelectItem value="sans">{t("fontSans")}</SelectItem>
+            <SelectItem value="serif">{t("fontSerif")}</SelectItem>
+            <SelectItem value="mono">{t("fontMono")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -126,10 +129,8 @@ export function PreferencesForm({ initialPrefs }: PreferencesFormProps) {
       {/* Show line numbers */}
       <div className="flex items-center justify-between">
         <div>
-          <Label>Show line numbers in code</Label>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Display line numbers in code blocks
-          </p>
+          <Label>{t("showLineNumbers")}</Label>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t("showLineNumbersDesc")}</p>
         </div>
         <Switch
           checked={prefs.showLineNumbers}
@@ -138,7 +139,7 @@ export function PreferencesForm({ initialPrefs }: PreferencesFormProps) {
       </div>
 
       <Button onClick={handleSave} disabled={saving}>
-        {saving ? "Saving…" : saved ? "Saved!" : "Save preferences"}
+        {saving ? tCommon("saving") : saved ? t("savedBang") : t("savePreferences")}
       </Button>
     </div>
   );

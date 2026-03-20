@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { IntlWrapper } from "../test-intl-wrapper";
 // jest-dom matchers loaded via setup-dom.ts
 
 vi.mock("next-auth/react", () => ({
@@ -23,18 +24,18 @@ describe("UserMenu", () => {
   };
 
   it("renders avatar trigger button", () => {
-    render(<UserMenu user={baseUser} />);
+    render(<UserMenu user={baseUser} />, { wrapper: IntlWrapper });
     const button = screen.getByRole("button");
     expect(button).toBeInTheDocument();
   });
 
   it("shows user initials as fallback when no image", () => {
-    render(<UserMenu user={baseUser} />);
+    render(<UserMenu user={baseUser} />, { wrapper: IntlWrapper });
     expect(screen.getByText("TU")).toBeInTheDocument();
   });
 
   it("shows single initial from email when no name", () => {
-    render(<UserMenu user={{ ...baseUser, name: null }} />);
+    render(<UserMenu user={{ ...baseUser, name: null }} />, { wrapper: IntlWrapper });
     expect(screen.getByText("T")).toBeInTheDocument();
   });
 });

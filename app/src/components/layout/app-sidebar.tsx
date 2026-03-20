@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { PanelLeftClose, PanelLeft, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
@@ -27,6 +28,9 @@ function isNavActive(pathname: string, href: string): boolean {
 export function AppSidebar({ isAdmin }: AppSidebarProps) {
   const pathname = usePathname();
   const { collapsed, toggleCollapsed } = useNavStore();
+  const t = useTranslations("nav");
+  const tAdmin = useTranslations("admin");
+  const tCommon = useTranslations("common");
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
     setHydrated(true);
@@ -59,21 +63,29 @@ export function AppSidebar({ isAdmin }: AppSidebarProps) {
             )}
           >
             <BookOpen className="h-5 w-5 shrink-0 text-primary" />
-            {!isCollapsed && <span className="truncate text-sm">LearnBook</span>}
+            {!isCollapsed && <span className="truncate text-sm">{tCommon("appName")}</span>}
           </Link>
         </div>
 
         {/* Nav groups — independently scrollable */}
         <nav className="flex-1 overflow-y-auto px-2 py-3">
-          {groups.map((group, i) => (
-            <NavGroupSection
-              key={group.label}
-              group={group}
-              collapsed={isCollapsed}
-              pathname={pathname}
-              isFirst={i === 0}
-            />
-          ))}
+          {groups.map((group, i) => {
+            const resolveItemLabel =
+              isOnAdminPage && isAdmin
+                ? (key: string) => tAdmin(key as never)
+                : (key: string) => t(key as never);
+            return (
+              <NavGroupSection
+                key={group.label}
+                group={group}
+                collapsed={isCollapsed}
+                pathname={pathname}
+                isFirst={i === 0}
+                resolveGroupLabel={(key: string) => t(key as never)}
+                resolveItemLabel={resolveItemLabel}
+              />
+            );
+          })}
         </nav>
 
         {/* Bottom: settings + toggle — always at bottom */}
@@ -84,7 +96,7 @@ export function AppSidebar({ isAdmin }: AppSidebarProps) {
               <NavLink
                 key={item.href}
                 href={item.href}
-                label={item.label}
+                label={t(item.label as never)}
                 icon={<item.icon className="h-4 w-4 shrink-0" />}
                 active={active}
                 collapsed={isCollapsed}
@@ -109,7 +121,7 @@ export function AppSidebar({ isAdmin }: AppSidebarProps) {
               </Button>
             </TooltipTrigger>
             <TooltipContent side="right" sideOffset={8}>
-              {isCollapsed ? "Expand" : "Collapse"}
+              {isCollapsed ? t("expand") : t("collapse")}
             </TooltipContent>
           </Tooltip>
         </div>
@@ -123,17 +135,21 @@ function NavGroupSection({
   collapsed,
   pathname,
   isFirst,
+  resolveGroupLabel,
+  resolveItemLabel,
 }: {
   group: NavGroup;
   collapsed: boolean;
   pathname: string;
   isFirst?: boolean;
+  resolveGroupLabel: (key: string) => string;
+  resolveItemLabel: (key: string) => string;
 }) {
   return (
     <div className="mb-3">
       {!collapsed && (
         <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-          {group.label}
+          {resolveGroupLabel(group.label)}
         </p>
       )}
       {collapsed && !isFirst && <div className="mx-auto mb-1 h-px w-6 bg-border" />}
@@ -144,7 +160,7 @@ function NavGroupSection({
             <NavLink
               key={item.href}
               href={item.href}
-              label={item.label}
+              label={resolveItemLabel(item.label)}
               icon={<item.icon className="h-4 w-4 shrink-0" />}
               active={active}
               collapsed={collapsed}
