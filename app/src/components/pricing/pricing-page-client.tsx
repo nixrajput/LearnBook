@@ -10,6 +10,7 @@ import { formatPrice } from "@/lib/plans";
 interface PricingPageClientProps {
   plans: PlanInfo[];
   currentPlan?: string;
+  isLoggedIn?: boolean;
   locale?: string;
 }
 
@@ -40,6 +41,7 @@ function getComparisonValue(features: string, rowIndex: number): string | boolea
 export function PricingPageClient({
   plans,
   currentPlan,
+  isLoggedIn,
   locale = "en-US",
 }: PricingPageClientProps) {
   const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
@@ -93,6 +95,7 @@ export function PricingPageClient({
               featureLabels={COMPARISON_ROWS.map((r) => r.label)}
               popular={plan.sortOrder === 1}
               isCurrentPlan={currentPlan === plan.planKey}
+              isLoggedIn={isLoggedIn}
               billingInterval={billingInterval}
               offerCode={offerCode}
               discountPercent={plan.planKey !== "FREE" ? discountPercent : undefined}

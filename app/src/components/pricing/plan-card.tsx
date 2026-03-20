@@ -14,6 +14,7 @@ interface PlanCardProps {
   featureLabels?: string[];
   popular?: boolean;
   isCurrentPlan?: boolean;
+  isLoggedIn?: boolean;
   billingInterval: "monthly" | "yearly";
   offerCode?: string;
   discountPercent?: number;
@@ -29,6 +30,7 @@ export function PlanCard({
   featureLabels = [],
   popular,
   isCurrentPlan,
+  isLoggedIn,
   billingInterval,
   offerCode,
   discountPercent,
@@ -52,6 +54,14 @@ export function PlanCard({
 
   async function handleCheckout() {
     if (isFree || isCurrentPlan) return;
+
+    // Redirect to login with return URL if not authenticated
+    if (!isLoggedIn) {
+      const returnUrl = `/pricing?checkout=${planKey}&interval=${billingInterval}`;
+      window.location.href = `/login?callbackUrl=${encodeURIComponent(returnUrl)}`;
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -61,6 +71,11 @@ export function PlanCard({
         body: JSON.stringify({ planKey, billingInterval, offerCode }),
       });
       const data = await res.json();
+      if (res.status === 401) {
+        // Session expired — redirect to login
+        window.location.href = `/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`;
+        return;
+      }
       if (data.url) {
         window.location.href = data.url;
       } else {

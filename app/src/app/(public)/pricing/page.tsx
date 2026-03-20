@@ -34,6 +34,7 @@ export default async function PricingPage() {
       <PricingPageClient
         plans={plans}
         currentPlan={session?.user?.plan}
+        isLoggedIn={!!session?.user}
         locale={session?.user?.locale ?? "en-US"}
       />
 

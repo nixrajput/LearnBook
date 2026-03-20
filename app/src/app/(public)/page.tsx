@@ -25,6 +25,7 @@ import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { ScrollReveal } from "@/components/shared/scroll-reveal";
 import { Parallax } from "@/components/shared/parallax";
+import { FeaturePreview } from "@/components/landing/feature-preview";
 
 export const metadata: Metadata = {
   title: "LearnBook — Learn Deeper, Read Smarter",
@@ -297,93 +298,9 @@ export default async function LandingPage() {
           </ScrollReveal>
         </div>
 
-        {/* Feature preview mockup */}
+        {/* Feature preview — multi-tab mockup */}
         <ScrollReveal animation="fade-up" delay={400}>
-          <div className="mx-auto mt-16 max-w-5xl md:mt-20">
-            <div className="overflow-hidden rounded-xl border bg-card shadow-2xl shadow-black/5 dark:shadow-black/20">
-              <div className="flex items-center gap-2 border-b bg-muted/40 px-4 py-2.5">
-                <div className="flex gap-1.5">
-                  <div className="h-3 w-3 rounded-full bg-red-400/70" />
-                  <div className="h-3 w-3 rounded-full bg-yellow-400/70" />
-                  <div className="h-3 w-3 rounded-full bg-green-400/70" />
-                </div>
-                <div className="mx-auto rounded-md bg-background/60 px-12 py-1 text-xs text-muted-foreground">
-                  learnbook.app/course/api-design
-                </div>
-              </div>
-              <div className="grid grid-cols-12 gap-0">
-                <div className="col-span-3 hidden border-r bg-muted/20 p-4 md:block">
-                  <div className="mb-4 flex items-center gap-2 text-sm font-semibold">
-                    <BookOpen className="h-4 w-4 text-primary" />
-                    <span>Backend Engineering</span>
-                  </div>
-                  <div className="space-y-1">
-                    {[
-                      "Networking Basics",
-                      "HTTP Deep Dive",
-                      "API Design",
-                      "Databases",
-                      "Caching",
-                    ].map((ch, i) => (
-                      <div
-                        key={ch}
-                        className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-xs ${i === 2 ? "bg-primary/10 font-medium text-primary" : "text-muted-foreground"}`}
-                      >
-                        {i < 2 ? (
-                          <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                        ) : (
-                          <div className="h-3 w-3 rounded-full border border-muted-foreground/30" />
-                        )}
-                        <span>
-                          Ch. {i + 1} — {ch}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="col-span-12 p-6 md:col-span-9">
-                  <div className="mb-4">
-                    <div className="mb-1 text-xs text-muted-foreground">Part I · Foundations</div>
-                    <h3 className="text-lg font-bold">Ch. 3 — API Design</h3>
-                    <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
-                      <span>12 min read</span>
-                      <span>2,400 words</span>
-                      <span className="flex items-center gap-1 text-emerald-500">
-                        <Flame className="h-3 w-3" /> 5 day streak
-                      </span>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="h-3 w-full rounded bg-zinc-200 dark:bg-zinc-700" />
-                    <div className="h-3 w-11/12 rounded bg-zinc-200 dark:bg-zinc-700" />
-                    <div className="h-3 w-10/12 rounded bg-zinc-200 dark:bg-zinc-700" />
-                    <div className="h-3 w-full rounded bg-zinc-200 dark:bg-zinc-700" />
-                    <div className="my-3 flex gap-3">
-                      <div className="flex-1 rounded-lg border-l-2 border-primary/40 bg-primary/5 p-3">
-                        <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-primary">
-                          <StickyNote className="h-3 w-3" />
-                          Note
-                        </div>
-                        <div className="h-2.5 w-3/4 rounded bg-primary/20" />
-                      </div>
-                      <div className="flex-1 rounded-lg border bg-indigo-500/5 p-3">
-                        <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-indigo-500">
-                          <Sparkles className="h-3 w-3" />
-                          AI Explanation
-                        </div>
-                        <div className="space-y-1">
-                          <div className="h-2 w-full rounded bg-indigo-500/15" />
-                          <div className="h-2 w-4/5 rounded bg-indigo-500/15" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="h-3 w-full rounded bg-zinc-200 dark:bg-zinc-700" />
-                    <div className="h-3 w-9/12 rounded bg-zinc-200 dark:bg-zinc-700" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <FeaturePreview />
         </ScrollReveal>
       </section>
 
