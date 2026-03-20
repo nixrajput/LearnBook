@@ -13,8 +13,8 @@ export const SUPPORTED_LOCALES: LocaleConfig[] = [
 ];
 
 export const SUPPORTED_LANGUAGES = [
-  { code: "en", label: "English" },
-  { code: "hi", label: "Hindi" },
+  { code: "en", label: "English", short: "EN" },
+  { code: "hi", label: "Hindi", short: "HI" },
 ];
 
 export const DEFAULT_LOCALE = "en-US";

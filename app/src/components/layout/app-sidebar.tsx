@@ -65,18 +65,19 @@ export function AppSidebar({ isAdmin }: AppSidebarProps) {
 
         {/* Nav groups — independently scrollable */}
         <nav className="flex-1 overflow-y-auto px-2 py-3">
-          {groups.map((group) => (
+          {groups.map((group, i) => (
             <NavGroupSection
               key={group.label}
               group={group}
               collapsed={isCollapsed}
               pathname={pathname}
+              isFirst={i === 0}
             />
           ))}
         </nav>
 
         {/* Bottom: settings + toggle — always at bottom */}
-        <div className="shrink-0 border-t px-2 py-2">
+        <div className={cn("shrink-0 px-2 py-2", !isCollapsed && "border-t")}>
           {bottomNavItems.map((item) => {
             const active = isNavActive(pathname, item.href);
             return (
@@ -121,10 +122,12 @@ function NavGroupSection({
   group,
   collapsed,
   pathname,
+  isFirst,
 }: {
   group: NavGroup;
   collapsed: boolean;
   pathname: string;
+  isFirst?: boolean;
 }) {
   return (
     <div className="mb-3">
@@ -133,7 +136,7 @@ function NavGroupSection({
           {group.label}
         </p>
       )}
-      {collapsed && <div className="mx-auto mb-1 h-px w-6 bg-border" />}
+      {collapsed && !isFirst && <div className="mx-auto mb-1 h-px w-6 bg-border" />}
       <div className="space-y-0.5">
         {group.items.map((item) => {
           const active = isNavActive(pathname, item.href);

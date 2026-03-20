@@ -2,7 +2,19 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { SUPPORTED_LOCALES, SUPPORTED_LANGUAGES } from "@/config/locales";
+
+function setCookie(name: string, value: string) {
+  document.cookie = `${name}=${value}; path=/; max-age=${365 * 24 * 60 * 60}; samesite=lax`;
+}
 
 interface LocaleFormProps {
   initialLocale: string;
@@ -33,7 +45,10 @@ export function LocaleForm({ initialLocale, initialLanguage }: LocaleFormProps) 
         setError(data.error ?? "Failed to save");
         return;
       }
+      // Set cookie so next-intl picks up the language immediately
+      setCookie("locale", language);
       setSaved(true);
+      window.location.reload();
       setTimeout(() => setSaved(false), 2000);
     } catch {
       setError("Network error");
@@ -43,48 +58,44 @@ export function LocaleForm({ initialLocale, initialLanguage }: LocaleFormProps) 
   }
 
   return (
-    <div className="space-y-4 rounded-lg border bg-card p-5">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label htmlFor="locale" className="mb-1.5 block text-sm font-medium">
-            Locale
-          </label>
-          <p className="mb-2 text-xs text-muted-foreground">
-            Controls date, number, and currency formatting.
+    <div className="space-y-5 rounded-lg border bg-card p-5">
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label>Language</Label>
+          <Select value={language} onValueChange={setLanguage}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SUPPORTED_LANGUAGES.map((l) => (
+                <SelectItem key={l.code} value={l.code}>
+                  {l.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            UI language for the app. Translations are being added.
           </p>
-          <select
-            id="locale"
-            value={locale}
-            onChange={(e) => setLocale(e.target.value)}
-            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-          >
-            {SUPPORTED_LOCALES.map((l) => (
-              <option key={l.code} value={l.code}>
-                {l.label}
-              </option>
-            ))}
-          </select>
         </div>
 
-        <div>
-          <label htmlFor="language" className="mb-1.5 block text-sm font-medium">
-            Language
-          </label>
-          <p className="mb-2 text-xs text-muted-foreground">
-            Primary UI language (translations coming soon).
+        <div className="space-y-2">
+          <Label>Region</Label>
+          <Select value={locale} onValueChange={setLocale}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SUPPORTED_LOCALES.map((l) => (
+                <SelectItem key={l.code} value={l.code}>
+                  {l.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            Controls date, number, and currency formatting.
           </p>
-          <select
-            id="language"
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            className="w-full rounded-md border bg-background px-3 py-2 text-sm"
-          >
-            {SUPPORTED_LANGUAGES.map((l) => (
-              <option key={l.code} value={l.code}>
-                {l.label}
-              </option>
-            ))}
-          </select>
         </div>
       </div>
 

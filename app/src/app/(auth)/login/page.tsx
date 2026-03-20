@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BookOpen, Github } from "lucide-react";
 import { signIn } from "@/auth";
 import { Button } from "@/components/ui/button";
+import { getTranslations } from "next-intl/server";
 
 export const metadata: Metadata = {
   title: "Login",
@@ -31,7 +32,9 @@ function GoogleIcon() {
   );
 }
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const t = await getTranslations("auth");
+
   return (
     <div className="w-full max-w-sm animate-fade-in">
       {/* Logo */}
@@ -42,8 +45,8 @@ export default function LoginPage() {
         >
           <BookOpen className="h-6 w-6 text-primary" />
         </Link>
-        <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
-        <p className="text-sm text-muted-foreground">Log in to continue your learning journey</p>
+        <h1 className="text-2xl font-bold tracking-tight">{t("welcomeBack")}</h1>
+        <p className="text-sm text-muted-foreground">{t("signInDescription")}</p>
       </div>
 
       {/* OAuth buttons */}
@@ -56,7 +59,7 @@ export default function LoginPage() {
         >
           <Button type="submit" variant="outline" className="w-full gap-2.5 py-5 text-[13px]">
             <GoogleIcon />
-            Continue with Google
+            {t("continueWithGoogle")}
           </Button>
         </form>
 
@@ -68,25 +71,25 @@ export default function LoginPage() {
         >
           <Button type="submit" variant="outline" className="w-full gap-2.5 py-5 text-[13px]">
             <Github className="h-4 w-4" />
-            Continue with GitHub
+            {t("continueWithGithub")}
           </Button>
         </form>
       </div>
 
       <p className="stagger-2 mt-8 animate-slide-up text-center text-xs text-muted-foreground">
-        By signing in, you agree to our{" "}
+        {t("termsAgreement")}{" "}
         <Link
           href="/terms"
           className="underline underline-offset-2 transition-colors hover:text-foreground"
         >
-          Terms of Service
+          {t("termsOfService")}
         </Link>{" "}
-        and{" "}
+        &{" "}
         <Link
           href="/privacy"
           className="underline underline-offset-2 transition-colors hover:text-foreground"
         >
-          Privacy Policy
+          {t("privacyPolicy")}
         </Link>
         .
       </p>

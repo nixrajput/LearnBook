@@ -6,11 +6,13 @@ import { ExportImport } from "@/components/settings/export-import";
 import { Separator } from "@/components/ui/separator";
 import { requireSession } from "@/lib/auth/session";
 import { ModelSelector } from "@/components/ai/model-selector";
+import { getTranslations } from "next-intl/server";
 
 export const metadata: Metadata = { title: "Settings" };
 
 export default async function SettingsPage() {
   const user = await requireSession();
+  const t = await getTranslations("settings");
   const [prefs, dbUser] = await Promise.all([
     db.userPreference.findUnique({ where: { userId: user.id } }),
     db.user.findUnique({
@@ -21,13 +23,11 @@ export default async function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="mb-8 text-3xl font-bold tracking-tight">Settings</h1>
+      <h1 className="mb-8 text-3xl font-bold tracking-tight">{t("title")}</h1>
 
       <section className="mb-8">
-        <h2 className="mb-1 text-lg font-semibold">Reader preferences</h2>
-        <p className="mb-4 text-sm text-muted-foreground">
-          Adjust font size, line width, and font family for a comfortable reading experience.
-        </p>
+        <h2 className="mb-1 text-lg font-semibold">{t("readerPreferences")}</h2>
+        <p className="mb-4 text-sm text-muted-foreground">{t("readerDescription")}</p>
         <PreferencesForm
           initialPrefs={{
             theme: (prefs?.theme ?? "system") as "light" | "dark" | "system",
@@ -42,10 +42,8 @@ export default async function SettingsPage() {
       <Separator className="my-8" />
 
       <section className="mb-8">
-        <h2 className="mb-1 text-lg font-semibold">Language & Region</h2>
-        <p className="mb-4 text-sm text-muted-foreground">
-          Set your preferred locale for formatting and language for the UI.
-        </p>
+        <h2 className="mb-1 text-lg font-semibold">{t("languageRegion")}</h2>
+        <p className="mb-4 text-sm text-muted-foreground">{t("languageDescription")}</p>
         <LocaleForm
           initialLocale={dbUser?.locale ?? "en-US"}
           initialLanguage={dbUser?.primaryLanguage ?? "en"}
@@ -55,20 +53,16 @@ export default async function SettingsPage() {
       <Separator className="my-8" />
 
       <section className="mb-8">
-        <h2 className="mb-1 text-lg font-semibold">AI Preferences</h2>
-        <p className="mb-4 text-sm text-muted-foreground">
-          Choose your preferred AI model. Higher-tier models use more credits per action.
-        </p>
+        <h2 className="mb-1 text-lg font-semibold">{t("aiPreferences")}</h2>
+        <p className="mb-4 text-sm text-muted-foreground">{t("aiDescription")}</p>
         <ModelSelector />
       </section>
 
       <Separator className="my-8" />
 
       <section>
-        <h2 className="mb-1 text-lg font-semibold">Export / Import</h2>
-        <p className="mb-4 text-sm text-muted-foreground">
-          Export your notes, bookmarks, and progress as JSON. Import them back anytime.
-        </p>
+        <h2 className="mb-1 text-lg font-semibold">{t("exportImport")}</h2>
+        <p className="mb-4 text-sm text-muted-foreground">{t("exportDescription")}</p>
         <ExportImport />
       </section>
     </div>

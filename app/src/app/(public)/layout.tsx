@@ -1,14 +1,18 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { BookOpen } from "lucide-react";
 import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { LanguageSwitcher } from "@/components/shared/language-switcher";
 import { AppShell } from "@/components/layout/app-shell";
 import { SiteFooter } from "@/components/layout/site-footer";
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   const isLoggedIn = !!session?.user;
+  const cookieStore = await cookies();
+  const currentLang = cookieStore.get("locale")?.value ?? "en";
 
   if (isLoggedIn) {
     return (
@@ -37,6 +41,7 @@ export default async function PublicLayout({ children }: { children: React.React
             <Button size="sm" asChild>
               <Link href="/login">Login</Link>
             </Button>
+            <LanguageSwitcher currentLanguage={currentLang} persistToDb={false} />
             <ThemeToggle />
           </div>
         </div>
