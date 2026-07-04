@@ -1,0 +1,180 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// One row per notes collection that has been seeded.
+// id = manifest.id (e.g. "backend-learning")
+model Course {
+  id            String   @id
+  title         String
+  description   String
+  collectionId  String   @unique
+  totalParts    Int
+  totalChapters Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  parts      Part[]
+  progress   ReadingProgress[]
+  notes      Note[]
+  bookmarks  Bookmark[]
+  highlights Highlight[]
+  streaks    ReadingStreak[]
+}
+
+model Part {
+  id           String  @id @default(cuid())
+  courseId     String
+  number       Int
+  romanNumeral String
+  title        String
+  description  String?
+  sortOrder    Int
+
+  course   Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  chapters Chapter[]
+
+  @@unique([courseId, number])
+  @@index([courseId])
+}
+
+model Chapter {
+  id             String   @id @default(cuid())
+  partId         String
+  courseId       String
+  number         Int
+  title          String
+  slug           String
+  rawContent     String
+  wordCount      Int
+  readingTimeMin Int
+  sortOrder      Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  part       Part              @relation(fields: [partId], references: [id], onDelete: Cascade)
+  sections   Section[]
+  progress   ReadingProgress?
+  bookmarks  Bookmark[]
+  notes      Note[]
+  highlights Highlight[]
+
+  @@unique([courseId, slug])
+  @@index([partId])
+  @@index([courseId])
+}
+
+model Section {
+  id        String @id @default(cuid())
+  chapterId String
+  heading   String
+  slug      String
+  level     Int
+  content   String
+  sortOrder Int
+
+  chapter   Chapter    @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  bookmarks Bookmark[]
+
+  @@index([chapterId])
+}
+
+model ReadingProgress {
+  id             String    @id @default(cuid())
+  courseId       String
+  chapterId      String    @unique
+  scrollPosition Float     @default(0)
+  completed      Boolean   @default(false)
+  completedAt    DateTime?
+  lastReadAt     DateTime  @default(now())
+  timeSpentSec   Int       @default(0)
+
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@index([courseId, lastReadAt])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  courseId  String
+  chapterId String
+  sectionId String?
+  label     String?
+  createdAt DateTime @default(now())
+
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  chapter Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  section Section? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+
+  @@unique([chapterId, sectionId])
+  @@index([courseId])
+}
+
+// scope values: "selection" | "section" | "chapter" | "course"
+model Note {
+  id           String   @id @default(cuid())
+  courseId     String
+  chapterId    String
+  sectionSlug  String?
+  scope        String   @default("chapter")
+  selectedText String?
+  content      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+  @@index([chapterId])
+  @@index([updatedAt])
+}
+
+model Highlight {
+  id          String   @id @default(cuid())
+  courseId    String
+  chapterId   String
+  startOffset Int
+  endOffset   Int
+  text        String
+  color       String   @default("yellow")
+  note        String?
+  createdAt   DateTime @default(now())
+
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+  @@index([chapterId])
+}
+
+model UserPreference {
+  id              String   @id @default("default")
+  theme           String   @default("system")
+  fontSize        Int      @default(16)
+  lineWidth       String   @default("md")
+  fontFamily      String   @default("sans")
+  showLineNumbers Boolean  @default(true)
+  activeCourseId  String?
+  updatedAt       DateTime @updatedAt
+}
+
+model ReadingStreak {
+  id           String   @id @default(cuid())
+  courseId     String
+  date         String
+  minutesRead  Int      @default(0)
+  chaptersRead Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, date])
+  @@index([courseId, date])
+}

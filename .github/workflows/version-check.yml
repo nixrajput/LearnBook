@@ -1,0 +1,40 @@
+name: Version Check
+
+# Every PR must set the root package.json version STRICTLY GREATER than the
+# highest released version (the highest v* git tag — the actually-released
+# source of truth, deliberately not the base-branch manifest). Release tags
+# v<version> on merge, so a non-bumped PR would collide with an existing tag.
+on:
+  pull_request:
+    branches: ["main"]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  version-bumped:
+    name: version bumped
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Compare against highest released tag
+        run: |
+          pr=$(jq -r .version package.json)
+          tag=$(git ls-remote --tags origin 2>/dev/null | sed -E 's#.*refs/tags/##' \
+            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' | sed 's/^v//' | sort -V | tail -n1)
+          tag=${tag:-0.0.0}
+          echo "highest released tag=$tag ; PR=$pr"
+          if [ "$pr" = "$tag" ]; then
+            echo "::error::package.json version $pr is already released (tag v$tag exists). Bump it."
+            exit 1
+          fi
+          top=$(printf '%s\n%s\n' "$tag" "$pr" | sort -V | tail -n1)
+          if [ "$top" != "$pr" ]; then
+            echo "::error::package.json version $pr is not greater than the highest released v$tag."
+            exit 1
+          fi
+          echo "Version $pr is ahead of the highest released (v$tag) ✓"

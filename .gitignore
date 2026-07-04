@@ -1,0 +1,38 @@
+# Monorepo root gitignore
+
+# Node
+node_modules/
+.npm
+
+# App build artifacts
+reader/node_modules/
+reader/.next/
+reader/out/
+reader/build/
+reader/dist/
+
+# Prisma / SQLite databases (each app manages its own)
+reader/*.db
+reader/*.db-journal
+reader/*.db-shm
+reader/*.db-wal
+reader/prisma/migrations/
+
+# Next.js
+reader/next-env.d.ts
+reader/*.tsbuildinfo
+
+# Env files — keep .env.example, ignore actual secrets
+reader/.env
+reader/.env.local
+reader/.env*.local
+
+# OS
+.DS_Store
+*.pem
+
+# Coverage
+coverage/
+reader/coverage/
+
+.playwright-mcp/
