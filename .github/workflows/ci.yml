@@ -39,6 +39,11 @@ jobs:
     name: Build
     needs: [lint, test]
     runs-on: ubuntu-latest
+    # next build collects page data via Prisma (generateStaticParams), so give
+    # the build a throwaway SQLite DB; empty tables -> no prerendered chapter
+    # pages, which is fine for a CI build check.
+    env:
+      DATABASE_URL: "file:./ci.db"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -46,4 +51,5 @@ jobs:
           node-version: 22
           cache: "npm"
       - run: npm ci
+      - run: npm run db:push --workspace=reader
       - run: npm run build

@@ -6,7 +6,11 @@ import { exportPayloadSchema } from "@/lib/validators/import-export";
 
 describe("createNoteSchema", () => {
   it("accepts valid note", () => {
-    const r = createNoteSchema.safeParse({ chapterId: "abc", content: "my note" });
+    const r = createNoteSchema.safeParse({
+      courseId: "c1",
+      chapterId: "abc",
+      content: "my note",
+    });
     expect(r.success).toBe(true);
   });
   it("rejects empty content", () => {
@@ -40,11 +44,15 @@ describe("updateProgressSchema", () => {
 
 describe("createBookmarkSchema", () => {
   it("accepts valid bookmark", () => {
-    const r = createBookmarkSchema.safeParse({ chapterId: "ch1" });
+    const r = createBookmarkSchema.safeParse({ courseId: "c1", chapterId: "ch1" });
     expect(r.success).toBe(true);
   });
   it("accepts with optional sectionId", () => {
-    const r = createBookmarkSchema.safeParse({ chapterId: "ch1", sectionId: "s1" });
+    const r = createBookmarkSchema.safeParse({
+      courseId: "c1",
+      chapterId: "ch1",
+      sectionId: "s1",
+    });
     expect(r.success).toBe(true);
   });
 });
