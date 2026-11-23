@@ -19,11 +19,6 @@
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@playwright/mcp@latest"]
-    },
-    "tanstack": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@tanstack/cli", "mcp"]
     }
   },
   "inputs": []

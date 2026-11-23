@@ -3,29 +3,31 @@
 # Node
 node_modules/
 .npm
+# Workspace lockfiles (only root package-lock.json should exist)
+app/package-lock.json
 
 # App build artifacts
-reader/node_modules/
-reader/.next/
-reader/out/
-reader/build/
-reader/dist/
+app/node_modules/
+app/.next/
+app/out/
+app/build/
+app/dist/
 
 # Prisma / SQLite databases (each app manages its own)
-reader/*.db
-reader/*.db-journal
-reader/*.db-shm
-reader/*.db-wal
-reader/prisma/migrations/
+app/*.db
+app/*.db-journal
+app/*.db-shm
+app/*.db-wal
+app/prisma/migrations/
 
 # Next.js
-reader/next-env.d.ts
-reader/*.tsbuildinfo
+app/next-env.d.ts
+app/*.tsbuildinfo
 
 # Env files — keep .env.example, ignore actual secrets
-reader/.env
-reader/.env.local
-reader/.env*.local
+app/.env
+app/.env.local
+app/.env*.local
 
 # OS
 .DS_Store
@@ -33,6 +35,10 @@ reader/.env*.local
 
 # Coverage
 coverage/
-reader/coverage/
+app/coverage/
 
 .playwright-mcp/
+plans/
+
+# Course content files (local upload directory, managed in Phase 7)
+courses/

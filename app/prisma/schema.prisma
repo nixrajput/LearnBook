@@ -1,0 +1,672 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Auth Models (Auth.js v5 Prisma Adapter) ─────────────────────────────────
+
+model User {
+  id                   String    @id @default(cuid())
+  email                String    @unique
+  emailVerified        DateTime? @map("email_verified")
+  name                 String?
+  image                String?
+  displayName          String?   @map("display_name")
+  bio                  String?
+  role                 String    @default("USER")
+  plan                 String    @default("FREE")
+  planExpiresAt        DateTime? @map("plan_expires_at")
+  stripeCustomerId     String?   @unique @map("stripe_customer_id")
+  stripeSubscriptionId String?   @map("stripe_subscription_id")
+  locale               String?
+  primaryLanguage      String?   @map("primary_language")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  accounts          Account[]
+  sessions          Session[]
+  preferences       UserPreference?
+  readingProgress   ReadingProgress[]
+  bookmarks         Bookmark[]
+  notes             Note[]
+  highlights        Highlight[]
+  readingStreaks     ReadingStreak[]
+  readingGoals      ReadingGoal[]
+  readingSessions   ReadingSession[]
+  offerRedemptions  OfferRedemption[]
+  aiCreditBalance   AiCreditBalance?
+  aiUsageLogs       AiUsageLog[]
+  aiPreference      AiPreference?
+  flashcardDecks    FlashcardDeck[]
+  flashcardReviews  FlashcardReview[]
+  quizzes           Quiz[]
+  studySessions     StudySession[]
+  groupMemberships   GroupMember[]
+  sharedAnnotations  SharedAnnotation[]
+  groupDiscussions   GroupDiscussion[]
+  concepts           Concept[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refreshToken      String? @map("refresh_token")
+  accessToken       String? @map("access_token")
+  expiresAt         Int?    @map("expires_at")
+  tokenType         String? @map("token_type")
+  scope             String?
+  idToken           String? @map("id_token")
+  sessionState      String? @map("session_state")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ─── Course Content ───────────────────────────────────────────────────────────
+
+model Course {
+  id            String   @id
+  title         String
+  description   String
+  collectionId  String   @unique @map("collection_id")
+  totalParts    Int      @map("total_parts")
+  totalChapters Int      @map("total_chapters")
+  isPublished   Boolean  @default(false) @map("is_published")
+  uploadedBy    String?  @map("uploaded_by")
+  filePath      String?  @map("file_path")
+  maxFileSize   Int?     @map("max_file_size")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  parts      Part[]
+  progress   ReadingProgress[]
+  notes      Note[]
+  bookmarks  Bookmark[]
+  highlights Highlight[]
+  streaks    ReadingStreak[]
+  sessions       ReadingSession[]
+  contentSources ContentSource[]
+
+  @@map("courses")
+}
+
+model Part {
+  id           String  @id @default(cuid())
+  courseId     String  @map("course_id")
+  number       Int
+  romanNumeral String  @map("roman_numeral")
+  title        String
+  description  String?
+  sortOrder    Int     @map("sort_order")
+
+  course   Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  chapters Chapter[]
+
+  @@unique([courseId, number])
+  @@index([courseId])
+  @@map("parts")
+}
+
+model Chapter {
+  id             String   @id @default(cuid())
+  partId         String   @map("part_id")
+  courseId       String   @map("course_id")
+  number         Int
+  title          String
+  slug           String
+  rawContent     String   @map("raw_content")
+  wordCount      Int      @map("word_count")
+  readingTimeMin Int      @map("reading_time_min")
+  sortOrder      Int      @map("sort_order")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  part            Part              @relation(fields: [partId], references: [id], onDelete: Cascade)
+  sections        Section[]
+  progress        ReadingProgress[]
+  bookmarks       Bookmark[]
+  notes           Note[]
+  highlights      Highlight[]
+  readingSessions ReadingSession[]
+
+  @@unique([courseId, slug])
+  @@index([partId])
+  @@index([courseId])
+  @@map("chapters")
+}
+
+model Section {
+  id        String @id @default(cuid())
+  chapterId String @map("chapter_id")
+  heading   String
+  slug      String
+  level     Int
+  content   String
+  sortOrder Int    @map("sort_order")
+
+  chapter   Chapter    @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  bookmarks Bookmark[]
+
+  @@index([chapterId])
+  @@map("sections")
+}
+
+// ─── User Activity ────────────────────────────────────────────────────────────
+
+model ReadingProgress {
+  id             String    @id @default(cuid())
+  userId         String    @map("user_id")
+  courseId       String    @map("course_id")
+  chapterId      String    @map("chapter_id")
+  scrollPosition Float     @default(0) @map("scroll_position")
+  completed      Boolean   @default(false)
+  completedAt    DateTime? @map("completed_at")
+  lastReadAt     DateTime  @default(now()) @map("last_read_at")
+  timeSpentSec   Int       @default(0) @map("time_spent_sec")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, chapterId])
+  @@index([userId, courseId])
+  @@index([courseId, lastReadAt])
+  @@map("reading_progress")
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  courseId  String   @map("course_id")
+  chapterId String   @map("chapter_id")
+  sectionId String?  @map("section_id")
+  label     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  chapter Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  section Section? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, chapterId, sectionId])
+  @@index([userId])
+  @@index([courseId])
+  @@map("bookmarks")
+}
+
+// scope values: "selection" | "section" | "chapter" | "course"
+model Note {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  courseId     String   @map("course_id")
+  chapterId    String   @map("chapter_id")
+  sectionSlug  String?  @map("section_slug")
+  scope        String   @default("chapter")
+  selectedText String?  @map("selected_text")
+  content      String
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([courseId])
+  @@index([chapterId])
+  @@index([updatedAt])
+  @@map("notes")
+}
+
+model Highlight {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  courseId    String   @map("course_id")
+  chapterId   String   @map("chapter_id")
+  startOffset Int      @map("start_offset")
+  endOffset   Int      @map("end_offset")
+  text        String
+  color       String   @default("yellow")
+  note        String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([courseId])
+  @@index([chapterId])
+  @@map("highlights")
+}
+
+model UserPreference {
+  id             String   @id @default(cuid())
+  userId         String   @unique @map("user_id")
+  theme          String   @default("system")
+  fontSize       Int      @default(16) @map("font_size")
+  lineWidth      String   @default("md") @map("line_width")
+  fontFamily     String   @default("sans") @map("font_family")
+  showLineNumbers Boolean  @default(true) @map("show_line_numbers")
+  activeCourseId String?  @map("active_course_id")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+model ReadingStreak {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  courseId     String   @map("course_id")
+  date         String
+  minutesRead  Int      @default(0) @map("minutes_read")
+  chaptersRead Int      @default(0) @map("chapters_read")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId, date])
+  @@index([userId, courseId, date])
+  @@map("reading_streaks")
+}
+
+model ReadingGoal {
+  id             String   @id @default(cuid())
+  userId         String   @unique @map("user_id")
+  dailyMinutes   Int      @default(30) @map("daily_minutes")
+  weeklyChapters Int      @default(5) @map("weekly_chapters")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("reading_goals")
+}
+
+model ReadingSession {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  courseId    String    @map("course_id")
+  chapterId   String    @map("chapter_id")
+  startedAt   DateTime  @default(now()) @map("started_at")
+  endedAt     DateTime? @map("ended_at")
+  wordsRead   Int       @default(0) @map("words_read")
+  durationSec Int       @default(0) @map("duration_sec")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@index([userId, startedAt])
+  @@index([userId, courseId])
+  @@map("reading_sessions")
+}
+
+// ─── Plan & Billing ───────────────────────────────────────────────────────────
+
+model PlanConfig {
+  id                   String   @id @default(cuid())
+  planKey              String   @unique @map("plan_key")
+  name                 String
+  priceMonthly         Int      @map("price_monthly")
+  priceYearly          Int      @map("price_yearly")
+  stripePriceIdMonthly String?  @map("stripe_price_id_monthly")
+  stripePriceIdYearly  String?  @map("stripe_price_id_yearly")
+  features             String
+  maxNotes             Int      @default(-1) @map("max_notes")
+  maxBookmarks         Int      @default(-1) @map("max_bookmarks")
+  maxHighlights        Int      @default(-1) @map("max_highlights")
+  maxCourses           Int      @default(-1) @map("max_courses")
+  isActive             Boolean  @default(true) @map("is_active")
+  sortOrder            Int      @default(0) @map("sort_order")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  @@map("plan_configs")
+}
+
+model Offer {
+  id                 String    @id @default(cuid())
+  code               String    @unique
+  description        String
+  discountPercent    Int       @map("discount_percent")
+  applicablePlans    String    @map("applicable_plans")
+  maxRedemptions     Int?      @map("max_redemptions")
+  currentRedemptions Int       @default(0) @map("current_redemptions")
+  validFrom          DateTime  @map("valid_from")
+  validUntil         DateTime? @map("valid_until")
+  isActive           Boolean   @default(true) @map("is_active")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  redemptions OfferRedemption[]
+
+  @@map("offers")
+}
+
+model OfferRedemption {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  offerId   String   @map("offer_id")
+  appliedAt DateTime @default(now()) @map("applied_at")
+
+  offer Offer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, offerId])
+  @@index([userId])
+  @@index([offerId])
+  @@map("offer_redemptions")
+}
+
+model CreditPack {
+  id        String  @id @default(cuid())
+  packKey   String  @unique @map("pack_key")
+  name      String
+  credits   Int
+  price     Int
+  popular   Boolean @default(false)
+  isActive  Boolean @default(true) @map("is_active")
+  sortOrder Int     @default(0) @map("sort_order")
+
+  @@map("credit_packs")
+}
+
+// ─── AI Features ──────────────────────────────────────────────────────────────
+
+model AiCreditBalance {
+  id             String   @id @default(cuid())
+  userId         String   @unique @map("user_id")
+  credits        Int      @default(100)
+  lastRefilledAt DateTime @default(now()) @map("last_refilled_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ai_credit_balances")
+}
+
+model AiUsageLog {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  action       String
+  credits      Int
+  provider     String
+  model        String
+  inputTokens  Int      @map("input_tokens")
+  outputTokens Int      @map("output_tokens")
+  multiplier   Float    @default(1)
+  courseId     String?  @map("course_id")
+  chapterId    String?  @map("chapter_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("ai_usage_logs")
+}
+
+model AiPreference {
+  id            String   @id @default(cuid())
+  userId        String   @unique @map("user_id")
+  selectedModel String   @default("auto") @map("selected_model")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ai_preferences")
+}
+
+// ─── Flashcards ───────────────────────────────────────────────────────────────
+
+model FlashcardDeck {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  courseId  String?  @map("course_id")
+  title     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cards FlashcardCard[]
+
+  @@index([userId])
+  @@map("flashcard_decks")
+}
+
+model FlashcardCard {
+  id            String    @id @default(cuid())
+  deckId        String    @map("deck_id")
+  front         String
+  back          String
+  sourceType    String?   @map("source_type")
+  sourceId      String?   @map("source_id")
+  chapterId     String?   @map("chapter_id")
+  stability     Float     @default(0)
+  difficulty    Float     @default(0)
+  elapsedDays   Int       @default(0) @map("elapsed_days")
+  scheduledDays Int       @default(0) @map("scheduled_days")
+  reps          Int       @default(0)
+  lapses        Int       @default(0)
+  state         Int       @default(0)
+  learningSteps Int       @default(0) @map("learning_steps")
+  lastReview    DateTime? @map("last_review")
+  dueDate       DateTime? @map("due_date")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  deck    FlashcardDeck    @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  reviews FlashcardReview[]
+
+  @@index([deckId, dueDate])
+  @@map("flashcard_cards")
+}
+
+model FlashcardReview {
+  id         String   @id @default(cuid())
+  cardId     String   @map("card_id")
+  userId     String   @map("user_id")
+  rating     Int
+  reviewedAt DateTime @default(now()) @map("reviewed_at")
+
+  card FlashcardCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([cardId])
+  @@index([userId, reviewedAt])
+  @@map("flashcard_reviews")
+}
+
+// ─── Quiz & Study Sessions ────────────────────────────────────────────────────
+
+model Quiz {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  courseId  String   @map("course_id")
+  chapterId String   @map("chapter_id")
+  questions String
+  score     Int?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, chapterId])
+  @@map("quizzes")
+}
+
+model StudySession {
+  id           String    @id @default(cuid())
+  userId       String    @map("user_id")
+  courseId     String    @map("course_id")
+  chapterId    String    @map("chapter_id")
+  exchanges    String    @default("[]")
+  overallScore Int?      @map("overall_score")
+  weakAreas    String?   @map("weak_areas")
+  completedAt  DateTime? @map("completed_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("ai_study_sessions")
+}
+
+// ─── Content Sources ──────────────────────────────────────────────────────────
+
+model ContentSource {
+  id          String   @id @default(cuid())
+  courseId    String   @map("course_id")
+  sourceType  String   @map("source_type")
+  originalUrl String?  @map("original_url")
+  filePath    String?  @map("file_path")
+  fileSize    Int?     @map("file_size")
+  mimeType    String?  @map("mime_type")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+  @@map("content_sources")
+}
+
+// ─── Study Groups ─────────────────────────────────────────────────────────────
+
+model StudyGroup {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  courseId    String   @map("course_id")
+  createdBy   String   @map("created_by")
+  inviteCode  String   @unique @map("invite_code")
+  isPublic    Boolean  @default(false) @map("is_public")
+  maxMembers  Int      @default(20) @map("max_members")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  members     GroupMember[]
+  discussions GroupDiscussion[]
+  annotations SharedAnnotation[]
+
+  @@index([courseId])
+  @@index([createdBy])
+  @@map("study_groups")
+}
+
+model GroupMember {
+  id       String   @id @default(cuid())
+  groupId  String   @map("group_id")
+  userId   String   @map("user_id")
+  role     String   @default("MEMBER")
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  group StudyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([userId])
+  @@map("group_members")
+}
+
+model SharedAnnotation {
+  id        String   @id @default(cuid())
+  groupId   String   @map("group_id")
+  userId    String   @map("user_id")
+  chapterId String   @map("chapter_id")
+  type      String
+  sourceId  String   @map("source_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  group StudyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, chapterId])
+  @@map("shared_annotations")
+}
+
+model GroupDiscussion {
+  id        String   @id @default(cuid())
+  groupId   String   @map("group_id")
+  userId    String   @map("user_id")
+  chapterId String   @map("chapter_id")
+  parentId  String?  @map("parent_id")
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  group   StudyGroup        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  GroupDiscussion?  @relation("Replies", fields: [parentId], references: [id])
+  replies GroupDiscussion[] @relation("Replies")
+
+  @@index([groupId, chapterId])
+  @@index([parentId])
+  @@map("group_discussions")
+}
+
+// ─── Knowledge Graph ──────────────────────────────────────────────────────────
+
+model Concept {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  links ConceptLink[]
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@map("concepts")
+}
+
+model ConceptLink {
+  id         String @id @default(cuid())
+  conceptId  String @map("concept_id")
+  sourceType String @map("source_type")
+  sourceId   String @map("source_id")
+  chapterId  String @map("chapter_id")
+  courseId   String @map("course_id")
+
+  concept Concept @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+
+  @@unique([conceptId, sourceType, sourceId])
+  @@index([conceptId])
+  @@index([sourceType, sourceId])
+  @@map("concept_links")
+}

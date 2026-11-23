@@ -4,10 +4,10 @@
 
 LearnBook is a personal, self-hosted tool. Only the latest version on the `main` branch receives security fixes. There are no versioned releases with separate support windows at this time.
 
-| Version | Supported |
-|---------|-----------|
-| `main` (latest) | Yes |
-| Older commits | No |
+| Version         | Supported |
+| --------------- | --------- |
+| `main` (latest) | Yes       |
+| Older commits   | No        |
 
 ---
 
@@ -40,12 +40,12 @@ A useful report includes:
 
 ### Response timeline
 
-| Stage | Target |
-|-------|--------|
-| Initial acknowledgement | Within 72 hours |
-| Assessment and triage | Within 7 days |
-| Fix or mitigation | Dependent on severity |
-| Public disclosure | After a fix is available, coordinated with the reporter |
+| Stage                   | Target                                                  |
+| ----------------------- | ------------------------------------------------------- |
+| Initial acknowledgement | Within 72 hours                                         |
+| Assessment and triage   | Within 7 days                                           |
+| Fix or mitigation       | Dependent on severity                                   |
+| Public disclosure       | After a fix is available, coordinated with the reporter |
 
 ---
 
@@ -64,5 +64,5 @@ If you discover a vulnerability in a dependency used by this project, please rep
 ## Known Limitations
 
 - **No authentication** — the app assumes it is only accessible to its owner. Do not expose it to the public internet without adding auth.
-- **SQLite database** — stored at `reader/prisma/dev.db`. Protect this file with appropriate file-system permissions if the machine is shared.
+- **SQLite database** — stored at `app/prisma/dev.db`. Protect this file with appropriate file-system permissions if the machine is shared.
 - **`dangerouslySetInnerHTML`** — used in the search dialog to render highlighted snippets. Snippet content is sourced from the local database (seeded from local Markdown files), not from external user input, so XSS via this path requires the attacker to already control the local course files.

@@ -4,182 +4,150 @@ Thank you for your interest in contributing! This document explains how to get s
 
 ---
 
-## Table of Contents
+## Quick Start
 
-- [Contributing to LearnBook](#contributing-to-learnbook)
-  - [Table of Contents](#table-of-contents)
-  - [Code of Conduct](#code-of-conduct)
-  - [Getting Started](#getting-started)
-  - [Development Workflow](#development-workflow)
-  - [Branch Naming](#branch-naming)
-  - [Commit Messages](#commit-messages)
-  - [Pull Request Guidelines](#pull-request-guidelines)
-  - [Code Style](#code-style)
-  - [Testing](#testing)
-  - [Reporting Bugs](#reporting-bugs)
-  - [Suggesting Features](#suggesting-features)
-
----
-
-## Code of Conduct
-
-All contributors are expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md). Please read it before participating.
+```bash
+git clone https://github.com/nixrajput/LearnBook.git
+cd LearnBook
+npm install
+cp app/.env.example app/.env
+# Edit app/.env — set OAuth credentials (Google + GitHub)
+npm run db:push
+npm run db:seed
+npm run dev
+# → http://localhost:3000 (app)
+# → http://localhost:5555 (Prisma Studio)
+```
 
 ---
 
-## Getting Started
+## Project Structure
 
-1. **Fork** the repository and clone your fork:
+This is a monorepo using npm workspaces:
 
-   ```bash
-   git clone https://github.com/<your-username>/learnbook.git
-   cd learnbook
-   ```
-
-2. **Install dependencies** from the repo root:
-
-   ```bash
-   npm install
-   ```
-
-3. **Set up the database:**
-
-   ```bash
-   cp reader/.env.example reader/.env
-   # Edit reader/.env — set NOTES_PATH to a course folder under courses/
-   npm run db:push
-   npm run db:seed
-   ```
-
-4. **Start the dev server:**
-
-   ```bash
-   npm run dev
-   ```
-
-5. **Run checks** before opening a PR:
-   ```bash
-   npm run lint
-   npm run format:check
-   npm test
-   ```
+```
+learnbook/
+├── app/                    # Next.js 16 application (primary workspace)
+│   ├── prisma/             # Schema (30+ models) + seed script
+│   ├── messages/           # i18n translation files (en.json, hi.json)
+│   └── src/
+│       ├── app/            # App Router pages + API routes (40+)
+│       ├── components/     # React components (ui, reader, flashcards, ai, admin, etc.)
+│       ├── lib/            # Server utilities (ai, auth, content, flashcards, validators)
+│       ├── hooks/          # Custom React hooks
+│       ├── __tests__/      # 41 test files, 341 tests
+│       └── i18n/           # next-intl configuration
+├── docs/                   # Documentation and screenshots
+├── package.json            # Root workspace config
+└── README.md
+```
 
 ---
 
-## Development Workflow
+## Development Conventions
 
-- Work on a **feature branch** cut from `main`.
-- Keep changes focused — one feature or fix per pull request.
-- Make sure `npm run build` passes before pushing.
-- All CI checks (lint, format, build, tests) must pass for a PR to be merged.
+### Code Style
 
----
+- **TypeScript strict mode** — no `any` without `eslint-disable` comment.
+- **Prettier + ESLint** — run `npm run lint:fix && npm run format` before committing.
+- **Imports** — use `@/` path aliases (e.g., `@/lib/db`, `@/components/ui/button`).
 
-## Branch Naming
+### Component Patterns
 
-Use descriptive branch names with a short prefix:
+- **Server Components by default** — only add `"use client"` when you need interactivity or browser APIs.
+- **Push client boundaries down** — wrap only the interactive part, not the whole page.
+- **shadcn/ui for UI primitives** — don't build custom buttons, dialogs, etc. from scratch.
+- **Confirm dialogs for destructive actions** — use `<ConfirmDialog>` from `@/components/shared/confirm-dialog`.
 
-| Prefix      | Use for                               |
-| ----------- | ------------------------------------- |
-| `feat/`     | New features                          |
-| `fix/`      | Bug fixes                             |
-| `chore/`    | Tooling, deps, config                 |
-| `docs/`     | Documentation only                    |
-| `refactor/` | Code changes with no behaviour change |
+### API Route Patterns
 
-Examples: `feat/export-csv`, `fix/progress-bar-flicker`, `docs/update-readme`
+```typescript
+// Every authenticated route starts with:
+const user = await requireApiSession();
+if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+// Admin routes use fresh DB role check:
+const result = await requireAdmin();
+if (result.error) return result.error;
+
+// Plan limits checked before creation:
+const limitError = await checkPlanLimit(user.id, user.plan ?? "FREE", "notes");
+if (limitError) return limitError;
+```
+
+### Database
+
+- **Prisma ORM** — schema at `app/prisma/schema.prisma`.
+- **snake_case in DB** — use `@map()` and `@@map()` for column/table names.
+- **camelCase in TypeScript** — Prisma handles the mapping.
+- After schema changes: `npm run db:push && npm run db:generate`.
+
+### Testing
+
+Tests live in `app/src/__tests__/` and use **Vitest**.
+
+```bash
+npm test                    # Run all tests
+npm test -- --watch         # Watch mode
+npm test -- --run slugs     # Run specific test file
+```
+
+- **Unit tests** — pure logic (validators, credit calculations, FSRS scheduling).
+- **Integration tests** — mocked DB + auth (API route patterns, plan limits).
+- **Component tests** — `@testing-library/react` with `jsdom` environment.
+
+### i18n / Translations
+
+- Translation files: `app/messages/en.json`, `app/messages/hi.json`.
+- Server components: `const t = await getTranslations("namespace")`.
+- Client components: `const t = useTranslations("namespace")`.
+- Adding a new language: create `messages/<lang>.json`, copy structure from `en.json`, translate values, add to `SUPPORTED_LANGUAGES` in `config/locales.ts`.
 
 ---
 
 ## Commit Messages
 
-Follow the [Conventional Commits](https://www.conventionalcommits.org/) format:
+Follow the format in `.gitmessage`:
 
 ```
-<type>(<scope>): <short summary>
+<type>: <short description>
 
-[optional body]
-
-[optional footer]
+- Bullet point details of what changed.
+- Another detail.
 ```
 
-Common types: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `style`
-
-Examples:
-
-```
-feat(courses): add per-course completion percentage to dashboard
-fix(reader): restore scroll position on back navigation
-docs: update environment variables table in README
-```
-
-Keep the subject line under 72 characters and written in the imperative mood ("add" not "added").
+Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`.
 
 ---
 
-## Pull Request Guidelines
+## Pull Requests
 
-- Open a PR against the `main` branch.
-- Fill in the PR description: what changed and why, how to test it.
-- Link any related issues using `Closes #<issue-number>`.
-- Keep PRs small and reviewable — large PRs take longer and are harder to review.
-- Do not force-push to a PR branch after review has started.
-- Add or update tests for any changed behaviour.
-
----
-
-## Code Style
-
-The project uses **ESLint** and **Prettier** for consistent formatting.
-
-```bash
-# Check and auto-fix lint issues
-npm run lint:fix
-
-# Format all files
-npm run format
-```
-
-Key conventions:
-
-- TypeScript strict mode — avoid `any` unless there is no alternative.
-- Server components are the default — only add `"use client"` when interactivity is required.
-- Keep components focused — extract client interactivity into small leaf components rather than making whole pages client-side.
-- No new external dependencies without discussion — the goal is to keep the bundle small.
+1. Create a feature branch from `main`.
+2. Make your changes with tests.
+3. Run `npm run lint:fix && npm run format && npm test`.
+4. Open a PR with a clear description of what and why.
+5. PRs are reviewed for correctness, security, and consistency with existing patterns.
 
 ---
 
-## Testing
+## Areas Open for Contribution
 
-Tests live in `reader/src/__tests__/` and use **Vitest**.
-
-```bash
-npm test
-```
-
-- Write a test for any non-trivial utility function or bug fix.
-- Tests should not hit the real database — use mocks or in-memory fixtures.
-
----
-
-## Reporting Bugs
-
-Open a [GitHub Issue](https://github.com/<your-username>/learnbook/issues) and include:
-
-- A clear title and description.
-- Steps to reproduce the issue.
-- Expected vs actual behaviour.
-- Your Node.js version (`node -v`) and OS.
-- Any relevant error messages or screenshots.
+- **Translations** — Add new languages by creating `messages/<lang>.json`.
+- **EPUB parsing** — Binary EPUB support (ZIP extraction) is a placeholder. Needs `adm-zip` integration.
+- **Rate limiting** — Upstash Redis integration (deferred from Phase 5).
+- **Anki export** — Export flashcard decks as `.apkg` files.
+- **Real-time groups** — WebSocket support for live discussion updates.
+- **Additional AI providers** — More provider integrations via AI SDK.
+- **Bug fixes and tests** — Always welcome.
 
 ---
 
-## Suggesting Features
+## Security
 
-Open a GitHub Issue with the label `enhancement`. Describe:
+If you discover a security vulnerability, please follow the responsible disclosure process in [SECURITY.md](SECURITY.md). Do **not** open a public issue.
 
-- The problem you are trying to solve.
-- Your proposed solution (or ideas for one).
-- Any alternatives you have considered.
+---
 
-Feature requests are welcome, but scope is intentionally kept small — LearnBook is a personal reading tool, not a general-purpose LMS.
+## License
+
+By contributing, you agree that your contributions will be licensed under the same terms as the project's [source-available license](LICENSE), and you grant the copyright holder a perpetual, irrevocable license to use your contribution under any license terms.
