@@ -134,16 +134,6 @@ export async function getChapterBySlug(
   };
 }
 
-export async function getAllChapterSlugs(): Promise<string[]> {
-  const courseId = await getActiveCourseId();
-  const chapters = await db.chapter.findMany({
-    where: { courseId },
-    select: { slug: true },
-    orderBy: { sortOrder: "asc" },
-  });
-  return chapters.map((c) => c.slug);
-}
-
 // ─── Advanced Analytics Functions ─────────────────────────────────────────────
 
 export interface ReadingSpeedStats {

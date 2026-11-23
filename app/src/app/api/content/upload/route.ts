@@ -6,11 +6,10 @@ import { requireApiSession } from "@/lib/auth/session";
 import { parsePdf } from "@/lib/content/parsers/pdf-parser";
 import { parseEpub } from "@/lib/content/parsers/epub-parser";
 import { slugify } from "@/lib/utils/slug";
+import { MAX_UPLOAD_MB, MULTIPART_OVERHEAD_BYTES } from "@/lib/content/upload-limits";
 
-const MAX_SIZE_MB = parseInt(process.env.MAX_COURSE_FILE_SIZE_MB ?? "50", 10);
 const UPLOAD_PATH = process.env.COURSE_UPLOAD_PATH ?? "../courses/uploads";
 const ALLOWED_TYPES = [".pdf", ".epub"];
-const MULTIPART_OVERHEAD_BYTES = 64 * 1024;
 
 export async function POST(req: NextRequest) {
   const user = await requireApiSession();
@@ -30,13 +29,13 @@ export async function POST(req: NextRequest) {
   }
 
   // formData() reads the whole body into memory, so refuse an oversized request before reading it.
-  const maxBytes = MAX_SIZE_MB * 1024 * 1024;
+  const maxBytes = MAX_UPLOAD_MB * 1024 * 1024;
   const declaredBytes = Number(req.headers.get("content-length"));
   if (!declaredBytes) {
     return NextResponse.json({ error: "Content-Length is required" }, { status: 411 });
   }
   if (declaredBytes > maxBytes + MULTIPART_OVERHEAD_BYTES) {
-    return NextResponse.json({ error: `File exceeds ${MAX_SIZE_MB}MB limit` }, { status: 413 });
+    return NextResponse.json({ error: `File exceeds ${MAX_UPLOAD_MB}MB limit` }, { status: 413 });
   }
 
   const formData = await req.formData().catch(() => null);
@@ -54,7 +53,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (file.size > maxBytes) {
-    return NextResponse.json({ error: `File exceeds ${MAX_SIZE_MB}MB limit` }, { status: 413 });
+    return NextResponse.json({ error: `File exceeds ${MAX_UPLOAD_MB}MB limit` }, { status: 413 });
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());

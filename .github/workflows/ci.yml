@@ -43,9 +43,8 @@ jobs:
     name: Build
     needs: [lint, test]
     runs-on: ubuntu-latest
-    # next build collects page data via Prisma (generateStaticParams), so give
-    # the build a throwaway SQLite DB; empty tables -> no prerendered chapter
-    # pages, which is fine for a CI build check.
+    # next build prerenders pages that query Prisma, so give the build a
+    # throwaway SQLite DB. Empty tables are fine for a CI build check.
     env:
       DATABASE_URL: "file:./ci.db"
     steps:

@@ -39,7 +39,7 @@ coverage/
 app/coverage/
 
 .playwright-mcp/
-plans/
+/plans/
 
 # Course content files (local upload directory, managed in Phase 7)
-courses/
+/courses/
