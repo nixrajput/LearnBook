@@ -21,8 +21,19 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      # The job always runs because it is a required check. It waives the bump
+      # from inside when a PR changes only CI config or the runtime pin.
       - name: Compare against highest released tag
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
+          changed=$(git diff --name-only "origin/$BASE_REF...HEAD")
+          total=$(printf '%s\n' "$changed" | grep -c . || true)
+          infra=$(printf '%s\n' "$changed" | grep -cE '^(\.github/|\.nvmrc$)' || true)
+          if [ "${total:-0}" -le "${infra:-0}" ]; then
+            echo "Only CI config or the runtime pin changed; version bump not required."
+            exit 0
+          fi
           pr=$(jq -r .version package.json)
           tag=$(git ls-remote --tags origin 2>/dev/null | sed -E 's#.*refs/tags/##' \
             | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+' | sed 's/^v//' | sort -V | tail -n1)
