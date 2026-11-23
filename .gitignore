@@ -14,24 +14,25 @@ app/build/
 app/dist/
 
 # Prisma / SQLite databases (each app manages its own)
-app/*.db
-app/*.db-journal
-app/*.db-shm
-app/*.db-wal
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
 app/prisma/migrations/
 
 # Next.js
 app/next-env.d.ts
 app/*.tsbuildinfo
 
-# Env files — keep .env.example, ignore actual secrets
-app/.env
-app/.env.local
-app/.env*.local
+# Env files: keep .env.example, ignore actual secrets
+.env
+.env.*
+!.env.example
 
 # OS
 .DS_Store
 *.pem
+*.key
 
 # Coverage
 coverage/
