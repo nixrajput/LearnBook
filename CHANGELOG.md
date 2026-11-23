@@ -2,6 +2,26 @@
 
 All notable changes to LearnBook are documented here.
 
+## [0.2.1] - 2026-11-23
+
+### Fixed
+
+- PDF uploads work again: the parser uses the pdf-parse 2.x API.
+- A Stripe webhook delivered twice no longer grants credits twice.
+- AI requests charge credits down to zero and cap prompt input size.
+- AI features and the reader only open published courses or your own uploads.
+- Uploaded and imported text can no longer inject HTML into the reader or search.
+- Article import blocks private addresses, including through redirects.
+- Uploads over the size limit are refused before the server reads them.
+- Checkout no longer applies an offer you already redeemed or one that has not started.
+- `/api/auth/session` no longer returns the session token or Stripe ids.
+- Production CSP no longer allows `unsafe-eval`.
+
+### Changed
+
+- Upgraded dependencies to exact pins, including Prisma 7, AI SDK 7, Stripe 23, Zod 4 and lucide-react 1.
+- Pinned GitHub Actions by commit SHA and narrowed workflow permissions.
+
 ## [0.2.0] - 2026-11-23
 
 ### Phase 17a — Translation Infrastructure
