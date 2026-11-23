@@ -11,8 +11,10 @@
 import "dotenv/config";
 import Stripe from "stripe";
 import { PrismaClient } from "@prisma/client";
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { sqliteUrl } from "../src/lib/sqlite-url";
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ adapter: new PrismaBetterSqlite3({ url: sqliteUrl() }) });
 const CURRENCY = process.env.STRIPE_CURRENCY ?? "inr";
 
 async function main() {

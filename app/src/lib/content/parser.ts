@@ -188,18 +188,23 @@ export function getCourseManifest(coursePath?: string): {
   }
 }
 
+/** Courses a user may read: published courses and the user's own uploads. */
+export function readableCourseWhere(userId: string) {
+  return { OR: [{ isPublished: true }, { uploadedBy: userId }] };
+}
+
 /**
  * Returns the courseId for the currently active course for a given user.
  * Always resolved from DB only:
- *  1. UserPreference.activeCourseId from DB (if set and course exists).
- *  2. First course alphabetically in DB.
+ *  1. UserPreference.activeCourseId from DB (if set and the user may read that course).
+ *  2. First published course alphabetically in DB.
  */
 export async function getActiveCourseId(userId?: string): Promise<string> {
   try {
     const prefs = userId ? await db.userPreference.findUnique({ where: { userId } }) : null;
-    if (prefs?.activeCourseId) {
-      const courseExists = await db.course.findUnique({
-        where: { id: prefs.activeCourseId },
+    if (userId && prefs?.activeCourseId) {
+      const courseExists = await db.course.findFirst({
+        where: { id: prefs.activeCourseId, ...readableCourseWhere(userId) },
         select: { id: true },
       });
       if (courseExists) return prefs.activeCourseId;
@@ -209,7 +214,11 @@ export async function getActiveCourseId(userId?: string): Promise<string> {
   }
 
   try {
-    const first = await db.course.findFirst({ orderBy: { id: "asc" }, select: { id: true } });
+    const first = await db.course.findFirst({
+      where: { isPublished: true },
+      orderBy: { id: "asc" },
+      select: { id: true },
+    });
     if (first) return first.id;
   } catch {
     // ignore

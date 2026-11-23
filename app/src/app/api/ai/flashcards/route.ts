@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { readableCourseWhere } from "@/lib/content/parser";
 import { requireApiSession } from "@/lib/auth/session";
 import { getAiModel } from "@/lib/ai/router";
 import { reserveCredits, reconcileCredits, getOrCreateBalance } from "@/lib/ai/credits";
@@ -38,8 +39,8 @@ export async function POST(req: NextRequest) {
   } else if (parsed.data.noteContent) {
     content = parsed.data.noteContent;
   } else if (parsed.data.chapterId) {
-    const chapter = await db.chapter.findUnique({
-      where: { id: parsed.data.chapterId },
+    const chapter = await db.chapter.findFirst({
+      where: { id: parsed.data.chapterId, part: { course: readableCourseWhere(user.id) } },
       select: { rawContent: true, courseId: true },
     });
     if (!chapter) return NextResponse.json({ error: "Chapter not found" }, { status: 404 });

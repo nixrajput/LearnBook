@@ -1,10 +1,14 @@
+// Caps on text that goes into a prompt, so one request cannot spend far more tokens than it reserved.
+const MAX_USER_TEXT = 2000;
+const MAX_SUMMARY_SOURCE = 60_000;
+
 export function summarizePrompt(chapterTitle: string, chapterContent: string): string {
   return `You are a study assistant. Summarize the following chapter concisely.
 
 Chapter: ${chapterTitle}
 
 Content:
-${chapterContent}
+${chapterContent.slice(0, MAX_SUMMARY_SOURCE)}
 
 Provide:
 1. A brief overview (2-3 sentences)
@@ -19,7 +23,7 @@ export function explainPrompt(selectedText: string, chapterContext: string): str
   return `You are a study assistant helping a student understand a passage from their course material.
 
 The student highlighted this text and wants an explanation:
-"${selectedText}"
+"${selectedText.slice(0, MAX_USER_TEXT)}"
 
 Surrounding chapter context:
 ${chapterContext.slice(0, 3000)}
@@ -40,7 +44,7 @@ Chapter: ${chapterTitle}
 Chapter Content:
 ${chapterContent.slice(0, 6000)}
 
-Student's Question: ${question}
+Student's Question: ${question.slice(0, MAX_USER_TEXT)}
 
 Answer the question accurately based on the chapter content. If the answer is not in the chapter, say so. Use markdown formatting. Cite relevant sections when possible.`;
 }

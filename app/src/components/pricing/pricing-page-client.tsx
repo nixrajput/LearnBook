@@ -5,7 +5,7 @@ import { CheckCircle2, XCircle } from "lucide-react";
 import { PlanCard } from "@/components/pricing/plan-card";
 import { OfferBanner } from "@/components/pricing/offer-banner";
 import type { PlanInfo } from "@/lib/plans";
-import { formatPrice } from "@/lib/plans";
+import { formatPrice } from "@/lib/format-price";
 
 interface PricingPageClientProps {
   plans: PlanInfo[];

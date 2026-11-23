@@ -11,7 +11,7 @@ import {
   Legend,
 } from "recharts";
 import { ChartTooltipContent } from "@/components/ui/chart";
-import { formatPrice } from "@/lib/plans";
+import { formatPrice } from "@/lib/format-price";
 
 interface RevenueTrendProps {
   data: { date: string; mrr: number; pro: number; premium: number }[];

@@ -60,7 +60,7 @@ describe("knowledge graph logic", () => {
     });
 
     it("PRO users can access", () => {
-      const plan = "PRO";
+      const plan: string = "PRO";
       expect(plan !== "FREE").toBe(true);
     });
   });

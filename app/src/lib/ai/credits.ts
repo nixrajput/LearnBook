@@ -64,15 +64,12 @@ export async function reconcileCredits(
   const actualCost = calculateCredits(inputTokens, outputTokens, multiplier);
   const difference = actualCost - reservedAmount;
 
-  // Adjust balance: positive difference = deduct more (with floor guard), negative = refund
+  // Adjust balance: positive difference = deduct more (floored at zero), negative = refund
   const updated =
     difference > 0
-      ? await db.aiCreditBalance
-          .updateMany({
-            where: { userId, credits: { gte: difference } },
-            data: { credits: { decrement: difference } },
-          })
-          .then(() => db.aiCreditBalance.findUnique({ where: { userId } }))
+      ? await db.$executeRaw`UPDATE ai_credit_balances SET credits = MAX(credits - ${difference}, 0) WHERE user_id = ${userId}`.then(
+          () => db.aiCreditBalance.findUnique({ where: { userId } }),
+        )
       : difference < 0
         ? await db.aiCreditBalance.update({
             where: { userId },

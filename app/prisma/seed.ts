@@ -1,7 +1,15 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { seedCourse, seedPlanConfigs, seedCreditPacks } from "../src/lib/content/seeder";
+import { sqliteUrl } from "../src/lib/sqlite-url";
 
-const prisma = new PrismaClient();
+try {
+  process.loadEnvFile();
+} catch {
+  // No .env file: DATABASE_URL comes from the environment.
+}
+
+const prisma = new PrismaClient({ adapter: new PrismaBetterSqlite3({ url: sqliteUrl() }) });
 
 async function main() {
   console.log("🌱 Starting seed...\n");

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatPrice } from "@/lib/plans";
+import { formatPrice } from "@/lib/format-price";
 
 interface PlanCardProps {
   planKey: string;

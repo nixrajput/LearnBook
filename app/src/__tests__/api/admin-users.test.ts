@@ -36,7 +36,7 @@ describe("admin users API", () => {
 
     it("allows demoting other users", () => {
       const actingUserId = "u1";
-      const targetId = "u2";
+      const targetId: string = "u2";
       const newRole = "USER";
       const blocked = targetId === actingUserId && newRole === "USER";
       expect(blocked).toBe(false);
@@ -50,7 +50,7 @@ describe("admin users API", () => {
 
     it("allows deleting other users", () => {
       const actingUserId = "u1";
-      const targetId = "u2";
+      const targetId: string = "u2";
       expect(targetId === actingUserId).toBe(false);
     });
   });

@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { streamText } from "ai";
+import { createTextStreamResponse, streamText, toTextStream } from "ai";
 import { requireApiSession } from "@/lib/auth/session";
 import { getAiModel } from "@/lib/ai/router";
 import { reserveCredits, reconcileCredits, getOrCreateBalance } from "@/lib/ai/credits";
 import { summarizePrompt } from "@/lib/ai/prompts";
 import { db } from "@/lib/db";
+import { readableCourseWhere } from "@/lib/content/parser";
 
 export async function POST(req: NextRequest) {
   const user = await requireApiSession();
@@ -14,6 +15,12 @@ export async function POST(req: NextRequest) {
   const { chapterId } = body as { chapterId?: string };
   if (!chapterId) return NextResponse.json({ error: "chapterId is required" }, { status: 400 });
 
+  const chapter = await db.chapter.findFirst({
+    where: { id: chapterId, part: { course: readableCourseWhere(user.id) } },
+    select: { title: true, rawContent: true, courseId: true },
+  });
+  if (!chapter) return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
+
   // Ensure balance exists
   await getOrCreateBalance(user.id, user.plan ?? "FREE");
 
@@ -22,12 +29,6 @@ export async function POST(req: NextRequest) {
   if (!reserved) {
     return NextResponse.json({ error: "Insufficient AI credits" }, { status: 402 });
   }
-
-  const chapter = await db.chapter.findUnique({
-    where: { id: chapterId },
-    select: { title: true, rawContent: true, courseId: true },
-  });
-  if (!chapter) return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
 
   let modelResult;
   try {
@@ -73,5 +74,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "AI service unavailable" }, { status: 503 });
   }
 
-  return modelResult.toTextStreamResponse();
+  return createTextStreamResponse({ stream: toTextStream({ stream: modelResult.stream }) });
 }

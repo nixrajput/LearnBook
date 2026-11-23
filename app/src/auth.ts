@@ -75,13 +75,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     session({ session, user }) {
-      session.user.id = user.id;
-      session.user.role = user.role ?? "USER";
-      session.user.plan = user.plan ?? "FREE";
-      session.user.displayName = user.displayName ?? null;
-      session.user.locale = user.locale ?? null;
-      session.user.primaryLanguage = user.primaryLanguage ?? null;
-      return session;
+      // Auth.js passes the database session and the whole user row. Return only what the app reads,
+      // so /api/auth/session does not hand the session token or Stripe ids to client scripts.
+      return {
+        expires: session.expires,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          image: user.image,
+          role: user.role ?? "USER",
+          plan: user.plan ?? "FREE",
+          displayName: user.displayName ?? null,
+          locale: user.locale ?? null,
+          primaryLanguage: user.primaryLanguage ?? null,
+        },
+      };
     },
   },
   pages: {

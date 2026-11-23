@@ -44,11 +44,13 @@ export default async function ChapterPage({ params }: PageProps) {
   const { slug } = await params;
 
   const courseId = await getActiveCourseId(user.id);
-  const [chapter, parts, prefs, bookmarks] = await Promise.all([
+  const [chapter, parts, prefs, bookmarks, extractedSource] = await Promise.all([
     getChapterBySlug(slug, user.id),
     getAllPartsWithChapters(user.id),
     db.userPreference.findUnique({ where: { userId: user.id } }),
     db.bookmark.findMany({ where: { userId: user.id, courseId, chapter: { slug } } }),
+    // Only the PDF/EPUB upload and web import routes write content sources.
+    db.contentSource.findFirst({ where: { courseId }, select: { id: true } }),
   ]);
 
   if (!chapter) notFound();
@@ -113,6 +115,7 @@ export default async function ChapterPage({ params }: PageProps) {
           {/* Content */}
           <ChapterContent
             rawContent={chapter.rawContent}
+            plainMarkdown={extractedSource !== null}
             fontSize={prefs?.fontSize ?? 16}
             lineWidth={prefs?.lineWidth ?? "md"}
             fontFamily={prefs?.fontFamily ?? "sans"}

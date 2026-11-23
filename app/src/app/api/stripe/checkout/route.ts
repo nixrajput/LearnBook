@@ -65,7 +65,12 @@ export async function POST(req: NextRequest) {
     const offer = await db.offer.findUnique({ where: { code: offerCode } });
     if (offer && offer.isActive) {
       const applicable: string[] = JSON.parse(offer.applicablePlans);
+      const alreadyRedeemed = await db.offerRedemption.findUnique({
+        where: { userId_offerId: { userId: user.id, offerId: offer.id } },
+      });
       if (
+        !alreadyRedeemed &&
+        offer.validFrom <= new Date() &&
         (!offer.validUntil || offer.validUntil > new Date()) &&
         (offer.maxRedemptions === null || offer.currentRedemptions < offer.maxRedemptions) &&
         applicable.includes(planKey)

@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils/cn";
 
 interface ChapterContentProps {
   rawContent: string;
+  /** Text extracted from an uploaded file or imported page: parse as plain Markdown, never MDX. */
+  plainMarkdown?: boolean;
   fontSize?: number;
   lineWidth?: string;
   fontFamily?: string;
@@ -26,6 +28,7 @@ const FONT_FAMILY_CLASS: Record<string, string> = {
 
 export function ChapterContent({
   rawContent,
+  plainMarkdown = false,
   fontSize = 16,
   lineWidth = "md",
   fontFamily = "sans",
@@ -45,6 +48,7 @@ export function ChapterContent({
         source={rawContent}
         options={{
           mdxOptions: {
+            format: plainMarkdown ? "md" : "mdx",
             remarkPlugins: [remarkGfm],
             rehypePlugins: [rehypeSlug],
           },

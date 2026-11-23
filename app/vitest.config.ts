@@ -9,6 +9,8 @@ export default defineConfig({
     globals: true,
     root: __dirname,
     setupFiles: ["./src/__tests__/setup-dom.ts"],
+    // next-auth imports "next/server" without an extension, which Node's ESM loader rejects.
+    server: { deps: { inline: ["next-auth"] } },
   },
   resolve: {
     alias: {

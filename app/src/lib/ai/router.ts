@@ -1,7 +1,7 @@
 import { type LanguageModel } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createAnthropic } from "@ai-sdk/anthropic";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createGoogle } from "@ai-sdk/google";
 import { type ModelDef, resolveModel } from "./models";
 import { db } from "@/lib/db";
 
@@ -23,7 +23,7 @@ function createModel(def: ModelDef): LanguageModel {
       return anthropic(def.id);
     }
     case "google": {
-      const google = createGoogleGenerativeAI({ apiKey: process.env.GOOGLE_AI_API_KEY });
+      const google = createGoogle({ apiKey: process.env.GOOGLE_AI_API_KEY });
       return google(def.id);
     }
   }

@@ -53,3 +53,12 @@ describe("askPrompt", () => {
     expect(prompt.toLowerCase()).toContain("only");
   });
 });
+
+describe("prompt input caps", () => {
+  it("caps the selected text, the question and the summary source", () => {
+    const long = "x".repeat(100_000);
+    expect(explainPrompt(long, "ctx").length).toBeLessThan(3_000);
+    expect(askPrompt(long, "Title", "content").length).toBeLessThan(3_000);
+    expect(summarizePrompt("Title", long).length).toBeLessThan(61_000);
+  });
+});

@@ -19,6 +19,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ valid: false, reason: "Invalid or inactive code" });
   }
 
+  if (offer.validFrom > new Date()) {
+    return NextResponse.json({ valid: false, reason: "Offer is not active yet" });
+  }
+
   if (offer.validUntil && offer.validUntil < new Date()) {
     return NextResponse.json({ valid: false, reason: "Offer has expired" });
   }

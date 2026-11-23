@@ -127,10 +127,10 @@ Read → Highlight → Flashcard → Review → Remember
 | -------------- | ----------------------------------------------------- |
 | **Framework**  | Next.js 16 (App Router, Turbopack, Server Components) |
 | **UI**         | React 19 + Tailwind CSS + shadcn/ui (Radix UI)        |
-| **Database**   | SQLite (dev) / PostgreSQL (prod) via Prisma ORM       |
+| **Database**   | SQLite via Prisma ORM 7 (better-sqlite3 adapter)      |
 | **Auth**       | Auth.js v5 (NextAuth) — Google + GitHub OAuth         |
 | **Payments**   | Stripe (checkout, webhooks, customer portal)          |
-| **AI**         | Vercel AI SDK v6 (OpenAI, Anthropic, Google)          |
+| **AI**         | Vercel AI SDK v7 (OpenAI, Anthropic, Google)          |
 | **Flashcards** | ts-fsrs (Free Spaced Repetition Scheduler)            |
 | **Content**    | MDX via next-mdx-remote + Shiki syntax highlighting   |
 | **i18n**       | next-intl (English, Hindi)                            |
@@ -180,7 +180,7 @@ cp app/.env.example app/.env
 
 | Variable                | Required | Description                                                    |
 | ----------------------- | -------- | -------------------------------------------------------------- |
-| `DATABASE_URL`          | Yes      | SQLite path (`file:./dev.db`) or PostgreSQL connection string  |
+| `DATABASE_URL`          | Yes      | SQLite path (`file:./dev.db`, relative to `app/prisma/`)       |
 | `AUTH_SECRET`           | Yes      | Random secret for Auth.js sessions (`openssl rand -base64 32`) |
 | `GOOGLE_CLIENT_ID`      | Yes      | Google OAuth client ID                                         |
 | `GOOGLE_CLIENT_SECRET`  | Yes      | Google OAuth client secret                                     |

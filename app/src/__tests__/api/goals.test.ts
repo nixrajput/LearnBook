@@ -47,12 +47,12 @@ describe("goals API", () => {
     });
 
     it("PRO users should be allowed", () => {
-      const plan = "PRO";
+      const plan: string = "PRO";
       expect(plan !== "FREE").toBe(true);
     });
 
     it("PREMIUM users should be allowed", () => {
-      const plan = "PREMIUM";
+      const plan: string = "PREMIUM";
       expect(plan !== "FREE").toBe(true);
     });
   });

@@ -1,5 +1,7 @@
 import { db } from "@/lib/db";
 
+export { formatPrice } from "@/lib/format-price";
+
 export interface PlanLimits {
   maxNotes: number;
   maxBookmarks: number;
@@ -133,17 +135,6 @@ export async function getPlanLimits(planKey: string): Promise<PlanLimits> {
 /** Check if a user has exceeded a plan limit. */
 export function isWithinLimit(current: number, max: number): boolean {
   return max === -1 || current < max;
-}
-
-/** Format price amount to locale-formatted display string. */
-export function formatPrice(amount: number, locale: string = "en-US"): string {
-  if (amount === 0) return "Free";
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: "INR",
-    minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
 }
 
 /** Convert price amount to smallest currency unit for Stripe API. */

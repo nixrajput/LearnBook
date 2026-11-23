@@ -1,6 +1,6 @@
 {
   "name": "learnbook",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "workspaces": [
     "app"
@@ -21,12 +21,15 @@
     "db:studio": "npm run db:studio --workspace=app"
   },
   "devDependencies": {
-    "husky": "^9.1.7",
-    "lint-staged": "^15.5.1"
+    "husky": "9.1.7",
+    "lint-staged": "17.6.2"
   },
   "overrides": {
-    "next": "^16.2.10",
-    "effect": "3.21.4"
+    "next": "16.4.6",
+    "effect": "3.22.1",
+    "@tailwindcss/typography": {
+      "postcss-selector-parser": "6.1.5"
+    }
   },
   "lint-staged": {
     "app/src/**/*.{ts,tsx}": [
@@ -39,5 +42,8 @@
   },
   "engines": {
     "node": ">=22"
+  },
+  "allowScripts": {
+    "better-sqlite3@12.11.1": true
   }
 }
