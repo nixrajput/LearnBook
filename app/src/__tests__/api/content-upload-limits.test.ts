@@ -37,3 +37,13 @@ describe("upload size limit", () => {
     expect(res.status).toBe(411);
   });
 });
+
+describe("proxy body limit", () => {
+  it("lets the proxy buffer a full-size upload", async () => {
+    const { default: nextConfig } = await import("../../../next.config");
+    // The proxy passes only the first proxyClientMaxBodySize bytes to the route.
+    expect(nextConfig.experimental?.proxyClientMaxBodySize).toBeGreaterThanOrEqual(
+      50 * 1024 * 1024 + 64 * 1024,
+    );
+  });
+});
