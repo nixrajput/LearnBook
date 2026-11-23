@@ -41,7 +41,8 @@ describe("study groups logic", () => {
     });
 
     it("PRO can create up to 2 groups", () => {
-      const maxGroups = "PRO" === "PREMIUM" ? 10 : 2;
+      const plan: string = "PRO";
+      const maxGroups = plan === "PREMIUM" ? 10 : 2;
       expect(maxGroups).toBe(2);
     });
 
@@ -65,7 +66,7 @@ describe("study groups logic", () => {
     });
 
     it("MEMBER cannot delete group", () => {
-      const role = "MEMBER";
+      const role: string = "MEMBER";
       expect(role === "OWNER").toBe(false);
     });
 

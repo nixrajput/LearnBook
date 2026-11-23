@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { formatPrice } from "@/lib/plans";
+import { formatPrice } from "@/lib/format-price";
 
 interface CreditPackData {
   id: string;

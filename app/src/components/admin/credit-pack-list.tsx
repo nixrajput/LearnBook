@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { formatPrice } from "@/lib/plans";
+import { formatPrice } from "@/lib/format-price";
 
 interface PackRow {
   id: string;

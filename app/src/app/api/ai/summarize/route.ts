@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { streamText } from "ai";
+import { createTextStreamResponse, streamText, toTextStream } from "ai";
 import { requireApiSession } from "@/lib/auth/session";
 import { getAiModel } from "@/lib/ai/router";
 import { reserveCredits, reconcileCredits, getOrCreateBalance } from "@/lib/ai/credits";
@@ -73,5 +73,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "AI service unavailable" }, { status: 503 });
   }
 
-  return modelResult.toTextStreamResponse();
+  return createTextStreamResponse({ stream: toTextStream({ stream: modelResult.stream }) });
 }

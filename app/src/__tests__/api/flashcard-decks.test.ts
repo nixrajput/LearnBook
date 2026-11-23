@@ -29,7 +29,7 @@ describe("flashcard decks API", () => {
       expect(maxDecks).toBe(3);
     });
     it("PRO gets unlimited decks", () => {
-      const plan = "PRO";
+      const plan: string = "PRO";
       expect(plan !== "FREE").toBe(true);
     });
   });
