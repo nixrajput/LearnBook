@@ -5,6 +5,7 @@ import { getAiModel } from "@/lib/ai/router";
 import { reserveCredits, reconcileCredits, getOrCreateBalance } from "@/lib/ai/credits";
 import { askPrompt } from "@/lib/ai/prompts";
 import { db } from "@/lib/db";
+import { readableCourseWhere } from "@/lib/content/parser";
 
 export async function POST(req: NextRequest) {
   const user = await requireApiSession();
@@ -16,17 +17,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "question and chapterId are required" }, { status: 400 });
   }
 
+  const chapter = await db.chapter.findFirst({
+    where: { id: chapterId, part: { course: readableCourseWhere(user.id) } },
+    select: { title: true, rawContent: true, courseId: true },
+  });
+  if (!chapter) return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
+
   await getOrCreateBalance(user.id, user.plan ?? "FREE");
   const reserved = await reserveCredits(user.id);
   if (!reserved) {
     return NextResponse.json({ error: "Insufficient AI credits" }, { status: 402 });
   }
-
-  const chapter = await db.chapter.findUnique({
-    where: { id: chapterId },
-    select: { title: true, rawContent: true, courseId: true },
-  });
-  if (!chapter) return NextResponse.json({ error: "Chapter not found" }, { status: 404 });
 
   let modelResult;
   try {
