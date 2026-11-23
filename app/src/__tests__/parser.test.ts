@@ -5,17 +5,23 @@ import {
   resolveCourseFilePath,
 } from "@/lib/content/parser";
 import { resolve } from "path";
+import { existsSync } from "fs";
 
 // Point at the notes collection inside the monorepo
 const notesDir = resolve(__dirname, "../../../courses/backend-learning");
 const contentPath = resolve(notesDir, "backend_learning_notes.md");
+
+// The course content is private and not committed to the repo, so these suites
+// only run where the content exists (a local checkout with courses/ present).
+// CI has no content and skips them.
+const hasContent = existsSync(contentPath);
 
 // Also set env so resolveCourseFilePath works via the env path
 beforeAll(() => {
   process.env.COURSE_PATH = notesDir;
 });
 
-describe("parseMarkdownFile", () => {
+describe.skipIf(!hasContent)("parseMarkdownFile", () => {
   it("parses 9 parts", () => {
     const parts = parseMarkdownFile(contentPath);
     expect(parts).toHaveLength(9);
@@ -71,7 +77,7 @@ describe("parseMarkdownFile", () => {
   });
 });
 
-describe("getCourseDescription", () => {
+describe.skipIf(!hasContent)("getCourseDescription", () => {
   it("returns a non-empty description", () => {
     expect(getCourseDescription(contentPath).length).toBeGreaterThan(0);
   });
