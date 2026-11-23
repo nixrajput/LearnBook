@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { stripe } from "@/lib/stripe";
 import { db } from "@/lib/db";
 import type Stripe from "stripe";
@@ -18,6 +19,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
+  // Stripe can deliver one event more than once. The event id row and the event's writes commit
+  // together, so a redelivery hits the unique id and changes nothing.
+  try {
+    await db.$transaction(async (tx) => {
+      await tx.stripeEvent.create({ data: { id: event.id, type: event.type } });
+      await applyEvent(tx, event);
+    });
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      return NextResponse.json({ received: true, duplicate: true });
+    }
+    throw e;
+  }
+
+  return NextResponse.json({ received: true });
+}
+
+async function applyEvent(tx: Prisma.TransactionClient, event: Stripe.Event) {
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
@@ -34,7 +53,7 @@ export async function POST(req: NextRequest) {
       if (session.metadata?.type === "credit_purchase") {
         const credits = parseInt(session.metadata?.credits ?? "0", 10);
         if (credits > 0) {
-          await db.aiCreditBalance.upsert({
+          await tx.aiCreditBalance.upsert({
             where: { userId },
             update: { credits: { increment: credits } },
             create: { userId, credits },
@@ -49,7 +68,7 @@ export async function POST(req: NextRequest) {
 
       if (!planKey) break;
 
-      await db.user.update({
+      await tx.user.update({
         where: { id: userId },
         data: {
           plan: planKey,
@@ -60,17 +79,17 @@ export async function POST(req: NextRequest) {
 
       // Record offer redemption (idempotent via upsert)
       if (offerCode) {
-        const offer = await db.offer.findUnique({ where: { code: offerCode } });
+        const offer = await tx.offer.findUnique({ where: { code: offerCode } });
         if (offer) {
-          const existing = await db.offerRedemption.findUnique({
+          const existing = await tx.offerRedemption.findUnique({
             where: { userId_offerId: { userId, offerId: offer.id } },
           });
           if (!existing) {
             if (offer.maxRedemptions === null || offer.currentRedemptions < offer.maxRedemptions) {
-              await db.offerRedemption.create({
+              await tx.offerRedemption.create({
                 data: { userId, offerId: offer.id },
               });
-              await db.offer.update({
+              await tx.offer.update({
                 where: { id: offer.id },
                 data: { currentRedemptions: { increment: 1 } },
               });
@@ -85,14 +104,14 @@ export async function POST(req: NextRequest) {
       const subscription = event.data.object as Stripe.Subscription;
       const customerId = subscription.customer as string;
 
-      const user = await db.user.findFirst({
+      const user = await tx.user.findFirst({
         where: { stripeCustomerId: customerId },
       });
       if (!user) break;
 
       if (subscription.status === "active" || subscription.status === "trialing") {
         const periodEnd = subscription.items?.data?.[0]?.current_period_end;
-        await db.user.update({
+        await tx.user.update({
           where: { id: user.id },
           data: {
             ...(periodEnd ? { planExpiresAt: new Date(periodEnd * 1000) } : {}),
@@ -107,12 +126,12 @@ export async function POST(req: NextRequest) {
       const subscription = event.data.object as Stripe.Subscription;
       const customerId = subscription.customer as string;
 
-      const user = await db.user.findFirst({
+      const user = await tx.user.findFirst({
         where: { stripeCustomerId: customerId },
       });
       if (!user) break;
 
-      await db.user.update({
+      await tx.user.update({
         where: { id: user.id },
         data: {
           plan: "FREE",
@@ -123,6 +142,4 @@ export async function POST(req: NextRequest) {
       break;
     }
   }
-
-  return NextResponse.json({ received: true });
 }
