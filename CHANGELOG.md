@@ -2,6 +2,14 @@
 
 All notable changes to LearnBook are documented here.
 
+## [0.2.2] - 2026-11-23
+
+### Fixed
+
+- The course list, course detail, course activation and admin course and plan routes are now in the repository.
+- Uploads between 10 MB and 50 MB no longer fail.
+- Chapter pages no longer return a server error when the build database has no chapters.
+
 ## [0.2.1] - 2026-11-23
 
 ### Fixed
