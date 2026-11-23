@@ -3,22 +3,7 @@ import { db } from "@/lib/db";
 import { requireApiSession } from "@/lib/auth/session";
 import { getActiveCourseId } from "@/lib/content/parser";
 import type { SearchResult } from "@/types/database";
-
-function snippet(text: string, query: string, maxLen = 120): string {
-  const lower = text.toLowerCase();
-  const lowerQ = query.toLowerCase();
-  const idx = lower.indexOf(lowerQ);
-  if (idx === -1) return text.slice(0, maxLen) + (text.length > maxLen ? "…" : "");
-
-  const start = Math.max(0, idx - 40);
-  const end = Math.min(text.length, idx + query.length + 80);
-  const raw = text.slice(start, end);
-  const hl = raw.replace(
-    new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"),
-    (m) => `<mark>${m}</mark>`,
-  );
-  return (start > 0 ? "…" : "") + hl + (end < text.length ? "…" : "");
-}
+import { snippet } from "@/lib/utils/snippet";
 
 export async function GET(req: NextRequest) {
   const user = await requireApiSession();
