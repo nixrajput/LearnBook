@@ -5,14 +5,19 @@ import { Clock, CheckCircle2, BookOpen, ArrowLeft, StickyNote, Bookmark } from "
 import { db } from "@/lib/db";
 import { Progress } from "@/components/ui/progress";
 import { requireSession } from "@/lib/auth/session";
+import { readableCourseWhere } from "@/lib/content/parser";
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const user = await requireSession();
   const { id } = await params;
-  const course = await db.course.findUnique({ where: { id }, select: { title: true } });
+  const course = await db.course.findFirst({
+    where: { id, ...readableCourseWhere(user.id) },
+    select: { title: true },
+  });
   return { title: course?.title ?? "Course" };
 }
 
@@ -21,7 +26,10 @@ export default async function CourseDetailPage({ params }: PageProps) {
   const { id } = await params;
 
   const [course, parts] = await Promise.all([
-    db.course.findUnique({ where: { id }, select: { title: true, description: true } }),
+    db.course.findFirst({
+      where: { id, ...readableCourseWhere(user.id) },
+      select: { title: true, description: true },
+    }),
     db.part.findMany({
       where: { courseId: id },
       orderBy: { sortOrder: "asc" },

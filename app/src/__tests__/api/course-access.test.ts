@@ -3,7 +3,10 @@ import { NextRequest } from "next/server";
 import { useTestDatabase } from "../helpers/test-db";
 
 const session = vi.hoisted(() => ({ user: { id: "zz-reader", plan: "FREE" } }));
-vi.mock("@/lib/auth/session", () => ({ requireApiSession: async () => session.user }));
+vi.mock("@/lib/auth/session", () => ({
+  requireApiSession: async () => session.user,
+  requireSession: async () => session.user,
+}));
 
 describe("course access for uploaded content", () => {
   let db: typeof import("@/lib/db").db;
@@ -74,5 +77,44 @@ describe("course access for uploaded content", () => {
     expect(res.status).toBe(404);
     const balance = await db.aiCreditBalance.findUnique({ where: { userId: "zz-reader" } });
     expect(balance?.credits).toBe(50);
+  });
+
+  it("lists only published courses and the caller's own uploads", async () => {
+    const { GET } = await import("@/app/api/courses/route");
+    const listedIds = async () =>
+      ((await (await GET()).json()) as { id: string }[]).map((c) => c.id);
+
+    expect(await listedIds()).toEqual(["zz-public"]);
+    session.user = { id: "zz-owner", plan: "FREE" };
+    try {
+      expect((await listedIds()).sort()).toEqual(["zz-private", "zz-public"]);
+    } finally {
+      session.user = { id: "zz-reader", plan: "FREE" };
+    }
+  });
+
+  it("returns 404 when activating a course the caller may not read", async () => {
+    const { POST } = await import("@/app/api/courses/[id]/activate/route");
+    const activate = (id: string) =>
+      POST(new NextRequest(`http://localhost/api/courses/${id}/activate`, { method: "POST" }), {
+        params: Promise.resolve({ id }),
+      });
+
+    expect((await activate("zz-private")).status).toBe(404);
+    expect((await activate("zz-missing")).status).toBe(404);
+    expect((await activate("zz-public")).status).toBe(200);
+  });
+
+  it("shows a course page only to users who may read the course", async () => {
+    const page = await import("@/app/(app)/courses/[id]/page");
+    const props = (id: string) => ({ params: Promise.resolve({ id }) });
+
+    await expect(page.default(props("zz-private"))).rejects.toMatchObject({
+      digest: "NEXT_HTTP_ERROR_FALLBACK;404",
+    });
+    expect(await page.generateMetadata(props("zz-private"))).toEqual({ title: "Course" });
+    const prefs = await db.userPreference.findUnique({ where: { userId: "zz-reader" } });
+    expect(prefs?.activeCourseId).not.toBe("zz-private");
+    await expect(page.default(props("zz-public"))).resolves.toBeTruthy();
   });
 });

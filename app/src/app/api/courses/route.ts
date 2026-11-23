@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireApiSession } from "@/lib/auth/session";
-import { getActiveCourseId } from "@/lib/content/parser";
+import { getActiveCourseId, readableCourseWhere } from "@/lib/content/parser";
 
 export async function GET() {
   const user = await requireApiSession();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const [courses, activeCourseId] = await Promise.all([
-    db.course.findMany({ orderBy: { createdAt: "asc" } }),
+    db.course.findMany({ where: readableCourseWhere(user.id), orderBy: { createdAt: "asc" } }),
     getActiveCourseId(user.id),
   ]);
 

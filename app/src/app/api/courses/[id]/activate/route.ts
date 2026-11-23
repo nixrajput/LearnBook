@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireApiSession } from "@/lib/auth/session";
+import { readableCourseWhere } from "@/lib/content/parser";
 
 export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await requireApiSession();
@@ -8,7 +9,10 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
 
   const { id } = await params;
 
-  const course = await db.course.findUnique({ where: { id }, select: { id: true, title: true } });
+  const course = await db.course.findFirst({
+    where: { id, ...readableCourseWhere(user.id) },
+    select: { id: true, title: true },
+  });
   if (!course) {
     return NextResponse.json({ error: "Course not found" }, { status: 404 });
   }
