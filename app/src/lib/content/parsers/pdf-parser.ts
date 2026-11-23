@@ -1,4 +1,7 @@
-const pdf = require("pdf-parse") as (buffer: Buffer) => Promise<{ text: string; numpages: number }>;
+import { PDFParse } from "pdf-parse";
+
+// Caps parse work on hostile files: pages past the cap are not read.
+const MAX_PDF_PAGES = 1000;
 
 export interface ParsedPdfChapter {
   title: string;
@@ -15,9 +18,16 @@ export async function parsePdf(buffer: Buffer): Promise<{
   totalPages: number;
   fullText: string;
 }> {
-  const data = await pdf(buffer);
-  const fullText = data.text;
-  const totalPages = data.numpages;
+  const parser = new PDFParse({ data: buffer, isEvalSupported: false });
+  let fullText: string;
+  let totalPages: number;
+  try {
+    const data = await parser.getText({ first: MAX_PDF_PAGES, pageJoiner: "" });
+    fullText = data.text;
+    totalPages = data.total;
+  } finally {
+    await parser.destroy();
+  }
 
   // Split by likely heading patterns
   const lines = fullText.split("\n");
