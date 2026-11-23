@@ -44,5 +44,7 @@ export default auth((req: any) => {
 });
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  // The proxy buffers request bodies before it runs. The upload routes skip it, so they must check
+  // the session and Content-Length themselves before they read the body.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/content/upload$|api/admin/courses$).*)"],
 };

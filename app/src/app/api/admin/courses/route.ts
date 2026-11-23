@@ -5,8 +5,9 @@ import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { validateCourseUpload } from "@/lib/content/validator";
 import { seedCourse } from "@/lib/content/seeder";
+import { MAX_UPLOAD_MB, MULTIPART_OVERHEAD_BYTES } from "@/lib/content/upload-limits";
 
-const MAX_SIZE_MB = parseInt(process.env.MAX_COURSE_FILE_SIZE_MB ?? "50", 10);
+const MAX_MANIFEST_BYTES = 1 * 1024 * 1024; // 1MB cap for manifest
 const UPLOAD_PATH = process.env.COURSE_UPLOAD_PATH ?? "../courses/uploads";
 
 /** GET — list all courses (including unpublished) for admin */
@@ -30,6 +31,16 @@ export async function POST(req: NextRequest) {
   const result = await requireAdmin();
   if (result.error) return result.error;
   const user = result.user;
+
+  // formData() reads the whole body into memory, so refuse an oversized request before reading it.
+  const maxBytes = MAX_UPLOAD_MB * 1024 * 1024;
+  const declaredBytes = Number(req.headers.get("content-length"));
+  if (!declaredBytes) {
+    return NextResponse.json({ error: "Content-Length is required" }, { status: 411 });
+  }
+  if (declaredBytes > MAX_MANIFEST_BYTES + maxBytes + MULTIPART_OVERHEAD_BYTES) {
+    return NextResponse.json({ error: `Upload exceeds ${MAX_UPLOAD_MB}MB limit` }, { status: 413 });
+  }
 
   const formData = await req.formData().catch(() => null);
   if (!formData) {
@@ -55,14 +66,12 @@ export async function POST(req: NextRequest) {
   }
 
   // Validate file sizes
-  const MAX_MANIFEST_BYTES = 1 * 1024 * 1024; // 1MB cap for manifest
   if (manifestFile.size > MAX_MANIFEST_BYTES) {
     return NextResponse.json({ error: "Manifest file exceeds 1MB limit" }, { status: 400 });
   }
-  const maxBytes = MAX_SIZE_MB * 1024 * 1024;
   if (markdownFile.size > maxBytes) {
     return NextResponse.json(
-      { error: `Markdown file exceeds maximum size of ${MAX_SIZE_MB}MB` },
+      { error: `Markdown file exceeds maximum size of ${MAX_UPLOAD_MB}MB` },
       { status: 400 },
     );
   }

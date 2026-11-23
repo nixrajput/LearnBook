@@ -1,6 +1,5 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
-import { MAX_UPLOAD_MB, MULTIPART_OVERHEAD_BYTES } from "./src/lib/content/upload-limits";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const isDev = process.env.NODE_ENV !== "production";
@@ -8,11 +7,6 @@ const isDev = process.env.NODE_ENV !== "production";
 const nextConfig: NextConfig = {
   productionBrowserSourceMaps: false,
   serverExternalPackages: ["pdf-parse"],
-
-  experimental: {
-    // The proxy passes only this many body bytes on to the route, so it must fit a full upload.
-    proxyClientMaxBodySize: MAX_UPLOAD_MB * 1024 * 1024 + MULTIPART_OVERHEAD_BYTES,
-  },
 
   images: {
     remotePatterns: [
