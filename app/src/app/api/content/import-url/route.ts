@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireApiSession } from "@/lib/auth/session";
-import { parseWebArticle } from "@/lib/content/parsers/web-parser";
+import { parseWebArticle, UnsafeUrlError } from "@/lib/content/parsers/web-parser";
 import { slugify } from "@/lib/utils/slug";
 import { z } from "zod";
 
@@ -35,33 +35,6 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const parsed = importSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
-
-  // SSRF protection: restrict scheme and block private/loopback hostnames
-  try {
-    const urlObj = new URL(parsed.data.url);
-    if (!["http:", "https:"].includes(urlObj.protocol)) {
-      return NextResponse.json({ error: "Only http/https URLs are supported" }, { status: 400 });
-    }
-    const hostname = urlObj.hostname.toLowerCase();
-    if (
-      hostname === "localhost" ||
-      hostname === "127.0.0.1" ||
-      hostname === "0.0.0.0" ||
-      hostname.startsWith("192.168.") ||
-      hostname.startsWith("10.") ||
-      hostname.startsWith("172.") ||
-      hostname === "169.254.169.254" ||
-      hostname.endsWith(".local") ||
-      hostname === "[::1]"
-    ) {
-      return NextResponse.json(
-        { error: "Cannot import from private/internal URLs" },
-        { status: 400 },
-      );
-    }
-  } catch {
-    return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
-  }
 
   try {
     const article = await parseWebArticle(parsed.data.url);
@@ -145,6 +118,9 @@ export async function POST(req: NextRequest) {
       { status: 201 },
     );
   } catch (e) {
+    if (e instanceof UnsafeUrlError) {
+      return NextResponse.json({ error: e.message }, { status: 400 });
+    }
     const msg = e instanceof Error ? e.message : "Failed to import article";
     return NextResponse.json({ error: msg }, { status: 500 });
   }
