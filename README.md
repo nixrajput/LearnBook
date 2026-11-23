@@ -318,7 +318,7 @@ PlanConfig / Offer / OfferRedemption (billing)
 - **Plan limits enforced server-side** — `checkPlanLimit()` runs before every create operation.
 - **AI credits reserve-then-reconcile** — atomic reservation before LLM call, actual cost reconciled after.
 - **FSRS for spaced repetition** — modern algorithm that adapts per-card and per-user.
-- **Defense-in-depth for admin** — proxy check + layout guard + `requireAdmin()` DB role check in every API route.
+- **Defense-in-depth for admin** — proxy check + layout guard + `requireAdmin()` DB role check in every API route. The upload routes (`api/content/upload`, `api/admin/courses`) skip the proxy, so the proxy does not buffer their bodies. They check the session and `Content-Length` before they read the body.
 
 ### Three-Tier Plan Structure
 

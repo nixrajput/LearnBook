@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { getChapterBySlug, getAllPartsWithChapters, getAllChapterSlugs } from "@/lib/content";
+import { getChapterBySlug, getAllPartsWithChapters } from "@/lib/content";
 import { getActiveCourseId } from "@/lib/content/parser";
 import { ReaderLayout } from "@/components/reader/reader-layout";
 import { ChapterContent } from "@/components/reader/chapter-content";
@@ -32,11 +32,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
   if (!chapter) return {};
   return { title: `Ch. ${chapter.number} — ${chapter.title}` };
-}
-
-export async function generateStaticParams() {
-  const slugs = await getAllChapterSlugs();
-  return slugs.map((slug) => ({ slug }));
 }
 
 export default async function ChapterPage({ params }: PageProps) {
