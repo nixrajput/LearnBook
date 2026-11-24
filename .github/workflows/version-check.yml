@@ -27,7 +27,7 @@ jobs:
         env:
           BASE_REF: ${{ github.base_ref }}
         run: |
-          changed=$(git diff --name-only "origin/$BASE_REF...HEAD")
+          changed=$(git diff --no-renames --name-only "origin/$BASE_REF...HEAD")
           total=$(printf '%s\n' "$changed" | grep -c . || true)
           infra=$(printf '%s\n' "$changed" | grep -cE '^(\.github/|\.nvmrc$)' || true)
           if [ "${total:-0}" -le "${infra:-0}" ]; then

@@ -2,6 +2,12 @@
 
 All notable changes to LearnBook are documented here.
 
+## [0.2.4] - 2026-11-24
+
+### Changed
+
+- LearnBook now requires Node.js 26. `engines`, `.nvmrc` and the README say 26, and `@types/node` is 26.6.6.
+
 ## [0.2.3] - 2026-11-24
 
 ### Changed
