@@ -2,6 +2,12 @@
 
 All notable changes to LearnBook are documented here.
 
+## [0.2.3] - 2026-11-24
+
+### Changed
+
+- The README now lists Node.js 22 or newer as the prerequisite, with 24 recommended, matching `engines` and `.nvmrc`.
+
 ## [0.2.2] - 2026-11-23
 
 ### Fixed
