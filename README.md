@@ -159,7 +159,7 @@ Read → Highlight → Flashcard → Review → Remember
 
 ### Prerequisites
 
-- **Node.js** >= 20.9.0
+- **Node.js** 22 or newer (24 recommended, as pinned in `.nvmrc`)
 - **npm** >= 10
 
 ### Installation
